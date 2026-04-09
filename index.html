@@ -809,6 +809,157 @@
     .hud-corner { width: 42px; height: 42px; }
     .tl-item { grid-template-columns: 60px 1px 1fr; }
   }
+
+  /* ══════════════════════════════════════════════════════════════════════
+     JARVIS AUDIO SYSTEM — HUD & Waveform
+  ══════════════════════════════════════════════════════════════════════ */
+
+  /* ── Unlock button ─────────────────────────────────────────────────── */
+  #audio-unlock {
+    position: fixed;
+    bottom: 28px; left: 50%; transform: translateX(-50%);
+    z-index: 9999;
+    background: rgba(0,8,22,0.88);
+    border: 1px solid rgba(0,212,255,.35);
+    color: var(--c1);
+    font-family: var(--font-hud);
+    font-size: 9px;
+    letter-spacing: 3.5px;
+    padding: 10px 28px;
+    cursor: pointer;
+    transition: opacity .5s, transform .5s;
+    white-space: nowrap;
+    outline: none;
+    animation: unlock-pulse 2.4s ease-in-out infinite;
+  }
+  #audio-unlock::before, #audio-unlock::after {
+    content: '';
+    position: absolute;
+    width: 9px; height: 9px;
+    border-color: var(--c1);
+    border-style: solid;
+    opacity: .7;
+  }
+  #audio-unlock::before { top: -1px; left: -1px; border-width: 2px 0 0 2px; }
+  #audio-unlock::after  { bottom: -1px; right: -1px; border-width: 0 2px 2px 0; }
+  #audio-unlock:hover { background: rgba(0,212,255,.08); }
+  #audio-unlock.hidden { opacity: 0; transform: translateX(-50%) translateY(20px); pointer-events: none; }
+  @keyframes unlock-pulse {
+    0%,100% { box-shadow: 0 0 8px rgba(0,212,255,.3); }
+    50%      { box-shadow: 0 0 22px rgba(0,212,255,.65), 0 0 44px rgba(0,212,255,.2); }
+  }
+
+  /* ── JARVIS Speaking Panel ─────────────────────────────────────────── */
+  #jarvis-hud {
+    position: fixed;
+    bottom: 28px; right: 28px;
+    z-index: 9998;
+    width: 300px;
+    background: rgba(0,7,20,.93);
+    border: 1px solid rgba(0,212,255,.22);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    padding: 14px 18px 12px;
+    transform: translateX(360px);
+    transition: transform .45s cubic-bezier(.16,1,.3,1), opacity .45s;
+    opacity: 0;
+    pointer-events: none;
+  }
+  #jarvis-hud.active { transform: translateX(0); opacity: 1; }
+
+  /* Corner brackets */
+  #jarvis-hud::before,
+  #jarvis-hud::after {
+    content: ''; position: absolute;
+    width: 12px; height: 12px;
+    border-color: var(--c1); border-style: solid; opacity: .6;
+  }
+  #jarvis-hud::before { top: -1px;    left: -1px;  border-width: 2px 0 0 2px; }
+  #jarvis-hud::after  { bottom: -1px; right: -1px; border-width: 0 2px 2px 0; }
+
+  /* Extra top-right & bottom-left corners via pseudo on inner div */
+  #jhud-inner::before,
+  #jhud-inner::after {
+    content: ''; position: absolute;
+    width: 8px; height: 8px;
+    border-color: rgba(0,212,255,.35); border-style: solid;
+  }
+  #jhud-inner::before { top: -1px;    right: -1px; border-width: 2px 2px 0 0; }
+  #jhud-inner::after  { bottom: -1px; left: -1px;  border-width: 0 0 2px 2px; }
+  #jhud-inner { position: relative; }
+
+  .jhud-scan {
+    position: absolute; inset: 0; pointer-events: none;
+    background: repeating-linear-gradient(
+      0deg, transparent, transparent 3px,
+      rgba(0,212,255,.018) 3px, rgba(0,212,255,.018) 4px
+    );
+  }
+
+  .jhud-header {
+    display: flex; align-items: center; gap: 7px;
+    margin-bottom: 9px;
+    font-family: var(--font-hud); font-size: 8.5px;
+    letter-spacing: 3px; color: var(--c1); opacity: .75;
+  }
+  .jhud-dot {
+    width: 5px; height: 5px; border-radius: 50%;
+    background: var(--c1); flex-shrink: 0;
+    animation: jhud-blink .9s ease-in-out infinite;
+  }
+  @keyframes jhud-blink {
+    0%,100% { opacity: 1; box-shadow: 0 0 5px var(--c1); }
+    50%      { opacity: .25; box-shadow: none; }
+  }
+  .jhud-title { flex: 1; }
+  .jhud-index { font-size: 8px; color: rgba(0,212,255,.45); letter-spacing: 2px; }
+
+  /* Caption */
+  #jhud-caption {
+    font-family: var(--font-mono); font-size: 11.5px;
+    color: #cdeaf8; min-height: 34px; line-height: 1.55;
+    margin-bottom: 10px;
+    border-left: 2px solid rgba(0,212,255,.5);
+    padding-left: 10px;
+  }
+  .jhud-cursor {
+    display: inline-block; width: 5px; height: 12px;
+    background: var(--c1); vertical-align: middle; margin-left: 2px;
+    animation: cursor-blink .55s step-end infinite;
+  }
+  @keyframes cursor-blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+  /* Waveform canvas */
+  #jhud-canvas {
+    width: 100% !important; height: 36px !important;
+    display: block;
+  }
+
+  /* Footer */
+  .jhud-footer {
+    display: flex; justify-content: space-between; margin-top: 7px;
+    font-family: var(--font-hud); font-size: 7.5px;
+    letter-spacing: 2px; color: rgba(0,212,255,.38);
+  }
+
+  /* ── Screen flash on trigger ────────────────────────────────────────── */
+  @keyframes j-flash {
+    0%   { opacity: 0; }
+    15%  { opacity: 1; }
+    75%  { opacity: 1; }
+    100% { opacity: 0; }
+  }
+  .j-flash {
+    position: fixed; inset: 0; pointer-events: none; z-index: 9989;
+    background: radial-gradient(ellipse at 85% 85%, rgba(0,212,255,.07) 0%, transparent 55%);
+    opacity: 0; animation: j-flash .9s forwards;
+  }
+
+  /* ── Mobile adjustments ─────────────────────────────────────────────── */
+  @media (max-width: 480px) {
+    #jarvis-hud { width: calc(100vw - 32px); right: 16px; bottom: 16px; }
+    #audio-unlock { font-size: 8px; padding: 9px 20px; letter-spacing: 2.5px; }
+  }
 </style>
 </head>
 <body>
@@ -1008,7 +1159,7 @@
   <!-- ══════════════════════════════════════════════════════════════
      O QUE VOCÊ VAI APRENDER
   ══════════════════════════════════════════════════════════════════ -->
-  <div class="section-divider reveal">MÓDULOS DO SISTEMA</div>
+  <div class="section-divider reveal" id="trigger-modulos">MÓDULOS DO SISTEMA</div>
 
   <div class="learn-list reveal" data-delay="1">
     <div class="learn-item">
@@ -1058,7 +1209,7 @@
   <!-- ══════════════════════════════════════════════════════════════
      PRA QUEM É + BÔNUS
   ══════════════════════════════════════════════════════════════════ -->
-  <div class="section-divider reveal">ACESSO & BÔNUS</div>
+  <div class="section-divider reveal" id="trigger-acesso">ACESSO & BÔNUS</div>
 
   <div class="two-col reveal" data-delay="1">
 
@@ -1566,5 +1717,315 @@
 })();
 
 </script>
+
+<!-- ════════════════════════════════════════════════════════════════════════
+     JARVIS AUDIO SYSTEM
+════════════════════════════════════════════════════════════════════════ -->
+
+<!-- Hidden audio elements (loaded on page init) -->
+<audio id="aud1" src="audio/1.mp3" preload="auto" crossorigin="anonymous"></audio>
+<audio id="aud2" src="audio/2.mp3" preload="auto" crossorigin="anonymous"></audio>
+<audio id="aud3" src="audio/3.mp3" preload="auto" crossorigin="anonymous"></audio>
+<audio id="aud4" src="audio/4.mp3" preload="auto" crossorigin="anonymous"></audio>
+<audio id="aud5" src="audio/5.mp3" preload="auto" crossorigin="anonymous"></audio>
+
+<!-- Unlock button -->
+<button id="audio-unlock" aria-label="Ativar sistema de áudio JARVIS">◆ ATIVAR SISTEMA DE ÁUDIO ◆</button>
+
+<!-- JARVIS Speaking HUD -->
+<div id="jarvis-hud" role="status" aria-live="polite">
+  <div class="jhud-scan"></div>
+  <div id="jhud-inner">
+    <div class="jhud-header">
+      <span class="jhud-dot"></span>
+      <span class="jhud-title">JARVIS · TRANSMITINDO</span>
+      <span class="jhud-index" id="jhud-index">01 / 05</span>
+    </div>
+    <div id="jhud-caption"><span class="jhud-cursor"></span></div>
+    <canvas id="jhud-canvas" width="264" height="36"></canvas>
+    <div class="jhud-footer">
+      <span id="jhud-status">SINAL DETECTADO</span>
+      <span id="jhud-time">00:00</span>
+    </div>
+  </div>
+</div>
+
+<script>
+// ════════════════════════════════════════════════════════════════════════
+// 8. JARVIS CINEMATIC AUDIO SYSTEM
+//    Scroll-triggered audio with real-time waveform + HUD captions
+// ════════════════════════════════════════════════════════════════════════
+(function () {
+  'use strict';
+
+  // ── Track definitions ─────────────────────────────────────────────
+  var TRACKS = [
+    { id: 'aud1', caption: 'Protocolo de acesso iniciado, senhor.',          idx: '01 / 05' },
+    { id: 'aud2', caption: 'Diagnóstico do sistema em andamento.',           idx: '02 / 05' },
+    { id: 'aud3', caption: 'Módulos de treinamento carregados e prontos.',   idx: '03 / 05' },
+    { id: 'aud4', caption: 'Vantagem computacional confirmada, senhor.',     idx: '04 / 05' },
+    { id: 'aud5', caption: 'Janela de acesso disponível. A decisão é sua.',  idx: '05 / 05' }
+  ];
+
+  // ── DOM refs ──────────────────────────────────────────────────────
+  var hudEl      = document.getElementById('jarvis-hud');
+  var captionEl  = document.getElementById('jhud-caption');
+  var indexEl    = document.getElementById('jhud-index');
+  var statusEl   = document.getElementById('jhud-status');
+  var timeEl     = document.getElementById('jhud-time');
+  var canvasEl   = document.getElementById('jhud-canvas');
+  var cCtx       = canvasEl ? canvasEl.getContext('2d') : null;
+  var unlockBtn  = document.getElementById('audio-unlock');
+
+  // ── State ─────────────────────────────────────────────────────────
+  var audioCtx   = null;
+  var analyser   = null;
+  var gains      = [];
+  var unlocked   = false;
+  var playing    = false;
+  var current    = -1;
+  var triggered  = {};
+  var rafId      = null;
+  var typeTimer  = null;
+  var timerRaf   = null;
+  var hideTimer  = null;
+
+  // ── Audio context bootstrap ───────────────────────────────────────
+  function bootAudio() {
+    if (audioCtx) return;
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    analyser = audioCtx.createAnalyser();
+    analyser.fftSize = 512;
+    analyser.smoothingTimeConstant = 0.82;
+    analyser.connect(audioCtx.destination);
+
+    TRACKS.forEach(function (track, i) {
+      var el  = document.getElementById(track.id);
+      if (!el) { gains.push(null); return; }
+      var src  = audioCtx.createMediaElementSource(el);
+      var gain = audioCtx.createGain();
+      gain.gain.value = 0;
+      src.connect(gain);
+      gain.connect(analyser);
+      gains.push(gain);
+
+      el.addEventListener('ended', function () { onTrackEnd(i); });
+    });
+  }
+
+  // ── Fade helpers ──────────────────────────────────────────────────
+  function fadeIn(gainNode) {
+    var now = audioCtx.currentTime;
+    gainNode.gain.cancelScheduledValues(now);
+    gainNode.gain.setValueAtTime(0, now);
+    gainNode.gain.linearRampToValueAtTime(1, now + 0.28);
+  }
+
+  function fadeOut(gainNode, cb) {
+    var now = audioCtx.currentTime;
+    gainNode.gain.cancelScheduledValues(now);
+    gainNode.gain.setValueAtTime(gainNode.gain.value, now);
+    gainNode.gain.linearRampToValueAtTime(0, now + 0.55);
+    setTimeout(cb, 600);
+  }
+
+  // ── Track end handler ─────────────────────────────────────────────
+  function onTrackEnd(i) {
+    if (current !== i) return;
+    statusEl.textContent = 'SINAL ENCERRADO';
+    clearTimeout(hideTimer);
+    hideTimer = setTimeout(function () {
+      hudEl.classList.remove('active');
+      stopWaveform();
+      playing = false;
+      current = -1;
+    }, 1400);
+  }
+
+  // ── Play a track ──────────────────────────────────────────────────
+  function playTrack(i) {
+    if (!unlocked || !audioCtx) return;
+    if (triggered[i]) return;
+    triggered[i] = true;
+
+    // Stop anything currently playing
+    if (playing && current >= 0) {
+      var prev = document.getElementById(TRACKS[current].id);
+      if (prev) { prev.pause(); prev.currentTime = 0; }
+      if (gains[current]) {
+        var now0 = audioCtx.currentTime;
+        gains[current].gain.cancelScheduledValues(now0);
+        gains[current].gain.setValueAtTime(0, now0);
+      }
+      clearTimeout(hideTimer);
+      stopWaveform();
+    }
+
+    var track = TRACKS[i];
+    var el    = document.getElementById(track.id);
+    var gain  = gains[i];
+    if (!el || !gain) return;
+
+    current = i;
+    playing = true;
+
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+
+    // Update HUD
+    indexEl.textContent  = track.idx;
+    statusEl.textContent = 'TRANSMITINDO';
+
+    // Show panel (slight delay for slide-in effect)
+    clearTimeout(hideTimer);
+    setTimeout(function () { hudEl.classList.add('active'); }, 30);
+
+    // Typewriter caption
+    typeCaption(track.caption);
+
+    // Flash screen
+    flashScreen();
+
+    // Fade in + play
+    fadeIn(gain);
+    el.currentTime = 0;
+    el.play().catch(function () {});
+
+    // Waveform + timer
+    startWaveform();
+    startTimer(el);
+  }
+
+  // ── Typewriter ────────────────────────────────────────────────────
+  function typeCaption(text) {
+    clearTimeout(typeTimer);
+    captionEl.innerHTML = '<span class="jhud-cursor"></span>';
+    var i = 0;
+    function next() {
+      if (i < text.length) {
+        captionEl.innerHTML = escHtml(text.slice(0, ++i)) + '<span class="jhud-cursor"></span>';
+        typeTimer = setTimeout(next, 36 + Math.random() * 22);
+      }
+    }
+    typeTimer = setTimeout(next, 180);
+  }
+
+  function escHtml(s) {
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  // ── Waveform ──────────────────────────────────────────────────────
+  function startWaveform() {
+    if (!cCtx || !analyser) return;
+    stopWaveform();
+    var data  = new Uint8Array(analyser.frequencyBinCount);
+    var W     = canvasEl.width;
+    var H     = canvasEl.height;
+    var BARS  = 44;
+    var bW    = W / BARS;
+
+    function draw() {
+      rafId = requestAnimationFrame(draw);
+      analyser.getByteFrequencyData(data);
+      cCtx.clearRect(0, 0, W, H);
+
+      for (var b = 0; b < BARS; b++) {
+        var idx = Math.floor(b * data.length / (BARS * 1.6));
+        var v   = data[idx] / 255;
+        var h   = Math.max(2, v * H * 0.95);
+        var x   = b * bW + bW * 0.12;
+        var bw  = bW * 0.72;
+
+        var gr  = cCtx.createLinearGradient(0, H - h, 0, H);
+        gr.addColorStop(0, v > 0.65 ? 'rgba(29,233,182,0.9)' : 'rgba(0,212,255,0.85)');
+        gr.addColorStop(0.5, 'rgba(0,180,230,0.5)');
+        gr.addColorStop(1,   'rgba(0,120,180,0.15)');
+
+        cCtx.fillStyle = gr;
+        cCtx.fillRect(x, H - h, bw, h);
+
+        // bright cap
+        if (v > 0.3) {
+          cCtx.fillStyle = v > 0.65 ? 'rgba(29,233,182,0.9)' : 'rgba(0,212,255,0.7)';
+          cCtx.fillRect(x, H - h - 1, bw, 1.5);
+        }
+      }
+    }
+    draw();
+  }
+
+  function stopWaveform() {
+    if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
+    if (cCtx)  cCtx.clearRect(0, 0, canvasEl.width, canvasEl.height);
+  }
+
+  // ── Timer ─────────────────────────────────────────────────────────
+  function startTimer(el) {
+    if (timerRaf) cancelAnimationFrame(timerRaf);
+    function tick() {
+      if (!playing) return;
+      var t = el.currentTime || 0;
+      var m = String(Math.floor(t / 60)).padStart(2,'0');
+      var s = String(Math.floor(t % 60)).padStart(2,'0');
+      timeEl.textContent = m + ':' + s;
+      timerRaf = requestAnimationFrame(tick);
+    }
+    tick();
+  }
+
+  // ── Screen flash ──────────────────────────────────────────────────
+  function flashScreen() {
+    var d = document.createElement('div');
+    d.className = 'j-flash';
+    document.body.appendChild(d);
+    setTimeout(function () { if (d.parentNode) d.parentNode.removeChild(d); }, 950);
+  }
+
+  // ── Scroll observers ─────────────────────────────────────────────
+  function setupObservers() {
+    var pairs = [
+      { selector: '#hero',            index: 0, margin: '0px 0px -75% 0px' },
+      { selector: '#metrics-block',   index: 1, margin: '0px' },
+      { selector: '#trigger-modulos', index: 2, margin: '0px' },
+      { selector: '#trigger-acesso',  index: 3, margin: '0px' },
+      { selector: '#cta',             index: 4, margin: '0px' }
+    ];
+
+    pairs.forEach(function (p) {
+      var el = document.querySelector(p.selector);
+      if (!el) return;
+      var obs = new IntersectionObserver(function (entries) {
+        entries.forEach(function (e) {
+          if (e.isIntersecting && !triggered[p.index]) {
+            playTrack(p.index);
+            obs.unobserve(el);
+          }
+        });
+      }, { threshold: 0.18, rootMargin: p.margin });
+      obs.observe(el);
+    });
+  }
+
+  // ── Unlock button ─────────────────────────────────────────────────
+  if (unlockBtn) {
+    unlockBtn.addEventListener('click', function () {
+      bootAudio();
+      if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+      unlocked = true;
+      unlockBtn.classList.add('hidden');
+      setTimeout(function () { unlockBtn.style.display = 'none'; }, 600);
+      setupObservers();
+    });
+
+    // Also unlock on any scroll/touch (silent unlock attempt)
+    var firstInteraction = function () {
+      // Only silently unlock context; button still required for first scroll
+      if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+    };
+    window.addEventListener('scroll', firstInteraction, { once: true, passive: true });
+  }
+
+})();
+</script>
+
 </body>
 </html>
