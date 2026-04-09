@@ -825,11 +825,15 @@
     font-family: var(--font-hud);
     font-size: 9px;
     letter-spacing: 3.5px;
-    padding: 10px 28px;
+    padding: 14px 32px;     /* maior área de toque para mobile */
     cursor: pointer;
-    transition: opacity .5s, transform .5s;
+    transition: opacity .5s, transform .5s, color .3s, border-color .3s;
     white-space: nowrap;
     outline: none;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;  /* remove delay de 300ms no iOS/Android */
+    -webkit-appearance: none;
+    user-select: none;
     animation: unlock-pulse 2.4s ease-in-out infinite;
   }
   #audio-unlock::before, #audio-unlock::after {
@@ -1723,11 +1727,11 @@
 ════════════════════════════════════════════════════════════════════════ -->
 
 <!-- Hidden audio elements (loaded on page init) -->
-<audio id="aud1" src="audio/1.mp3" preload="auto" crossorigin="anonymous"></audio>
-<audio id="aud2" src="audio/2.mp3" preload="auto" crossorigin="anonymous"></audio>
-<audio id="aud3" src="audio/3.mp3" preload="auto" crossorigin="anonymous"></audio>
-<audio id="aud4" src="audio/4.mp3" preload="auto" crossorigin="anonymous"></audio>
-<audio id="aud5" src="audio/5.mp3" preload="auto" crossorigin="anonymous"></audio>
+<audio id="aud1" src="audio/1.mp3" preload="auto" crossorigin="anonymous" playsinline></audio>
+<audio id="aud2" src="audio/2.mp3" preload="auto" crossorigin="anonymous" playsinline></audio>
+<audio id="aud3" src="audio/3.mp3" preload="auto" crossorigin="anonymous" playsinline></audio>
+<audio id="aud4" src="audio/4.mp3" preload="auto" crossorigin="anonymous" playsinline></audio>
+<audio id="aud5" src="audio/5.mp3" preload="auto" crossorigin="anonymous" playsinline></audio>
 
 <!-- Unlock button -->
 <button id="audio-unlock" aria-label="Ativar sistema de áudio JARVIS">◆ ATIVAR SISTEMA DE ÁUDIO ◆</button>
@@ -1752,87 +1756,132 @@
 
 <script>
 // ════════════════════════════════════════════════════════════════════════
-// 8. JARVIS CINEMATIC AUDIO SYSTEM
-//    Scroll-triggered audio with real-time waveform + HUD captions
+// 8. JARVIS CINEMATIC AUDIO SYSTEM  v2 — mobile-first fixes
+//    • iOS pre-authorization via play/pause in gesture handler
+//    • try/catch em todo Web Audio API (graceful degradation)
+//    • waveform simulado como fallback quando Web Audio falha
+//    • feedback visual no botão após ativação
+//    • funciona com e sem crossorigin / file:// / HTTPS
 // ════════════════════════════════════════════════════════════════════════
 (function () {
   'use strict';
 
-  // ── Track definitions ─────────────────────────────────────────────
   var TRACKS = [
-    { id: 'aud1', caption: 'Protocolo de acesso iniciado, senhor.',          idx: '01 / 05' },
-    { id: 'aud2', caption: 'Diagnóstico do sistema em andamento.',           idx: '02 / 05' },
-    { id: 'aud3', caption: 'Módulos de treinamento carregados e prontos.',   idx: '03 / 05' },
-    { id: 'aud4', caption: 'Vantagem computacional confirmada, senhor.',     idx: '04 / 05' },
-    { id: 'aud5', caption: 'Janela de acesso disponível. A decisão é sua.',  idx: '05 / 05' }
+    { id: 'aud1', caption: 'Protocolo de acesso iniciado, senhor.',         idx: '01 / 05' },
+    { id: 'aud2', caption: 'Diagnóstico do sistema em andamento.',          idx: '02 / 05' },
+    { id: 'aud3', caption: 'Módulos de treinamento carregados e prontos.',  idx: '03 / 05' },
+    { id: 'aud4', caption: 'Vantagem computacional confirmada, senhor.',    idx: '04 / 05' },
+    { id: 'aud5', caption: 'Janela de acesso disponível. A decisão é sua.', idx: '05 / 05' }
   ];
 
   // ── DOM refs ──────────────────────────────────────────────────────
-  var hudEl      = document.getElementById('jarvis-hud');
-  var captionEl  = document.getElementById('jhud-caption');
-  var indexEl    = document.getElementById('jhud-index');
-  var statusEl   = document.getElementById('jhud-status');
-  var timeEl     = document.getElementById('jhud-time');
-  var canvasEl   = document.getElementById('jhud-canvas');
-  var cCtx       = canvasEl ? canvasEl.getContext('2d') : null;
-  var unlockBtn  = document.getElementById('audio-unlock');
+  var hudEl     = document.getElementById('jarvis-hud');
+  var captionEl = document.getElementById('jhud-caption');
+  var indexEl   = document.getElementById('jhud-index');
+  var statusEl  = document.getElementById('jhud-status');
+  var timeEl    = document.getElementById('jhud-time');
+  var canvasEl  = document.getElementById('jhud-canvas');
+  var cCtx      = canvasEl ? canvasEl.getContext('2d') : null;
+  var unlockBtn = document.getElementById('audio-unlock');
 
   // ── State ─────────────────────────────────────────────────────────
-  var audioCtx   = null;
-  var analyser   = null;
-  var gains      = [];
-  var unlocked   = false;
-  var playing    = false;
-  var current    = -1;
-  var triggered  = {};
-  var rafId      = null;
-  var typeTimer  = null;
-  var timerRaf   = null;
-  var hideTimer  = null;
+  var audioCtx  = null;
+  var analyser  = null;
+  var gains     = [];          // null entry = fallback mode para essa faixa
+  var webAudioOk = false;      // true se Web Audio API funcionou
+  var unlocked  = false;
+  var playing   = false;
+  var current   = -1;
+  var triggered = {};
+  var rafId     = null;
+  var simT      = 0;           // tempo para waveform simulado
+  var typeTimer = null;
+  var timerRaf  = null;
+  var hideTimer = null;
 
-  // ── Audio context bootstrap ───────────────────────────────────────
-  function bootAudio() {
+  // ── 1. Tenta inicializar Web Audio API (silencia erros) ───────────
+  function tryBootWebAudio() {
     if (audioCtx) return;
-    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    analyser = audioCtx.createAnalyser();
-    analyser.fftSize = 512;
-    analyser.smoothingTimeConstant = 0.82;
-    analyser.connect(audioCtx.destination);
+    try {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      analyser = audioCtx.createAnalyser();
+      analyser.fftSize = 512;
+      analyser.smoothingTimeConstant = 0.82;
+      analyser.connect(audioCtx.destination);
 
-    TRACKS.forEach(function (track, i) {
-      var el  = document.getElementById(track.id);
-      if (!el) { gains.push(null); return; }
-      var src  = audioCtx.createMediaElementSource(el);
-      var gain = audioCtx.createGain();
-      gain.gain.value = 0;
-      src.connect(gain);
-      gain.connect(analyser);
-      gains.push(gain);
+      var allOk = true;
+      TRACKS.forEach(function (track, i) {
+        var el = document.getElementById(track.id);
+        if (!el) { gains.push(null); allOk = false; return; }
+        try {
+          var src  = audioCtx.createMediaElementSource(el);
+          var gain = audioCtx.createGain();
+          gain.gain.value = 0;
+          src.connect(gain);
+          gain.connect(analyser);
+          gains.push(gain);
+        } catch (e) {
+          // CORS local ou elemento já conectado → modo fallback para esta faixa
+          gains.push(null);
+          allOk = false;
+        }
+        el.addEventListener('ended', function () { onTrackEnd(i); });
+      });
+      webAudioOk = allOk;
+    } catch (e) {
+      // AudioContext não disponível (muito raro) → modo fallback total
+      audioCtx = null;
+      TRACKS.forEach(function (track, i) {
+        var el = document.getElementById(track.id);
+        gains.push(null);
+        if (el) el.addEventListener('ended', function () { onTrackEnd(i); });
+      });
+    }
+  }
 
-      el.addEventListener('ended', function () { onTrackEnd(i); });
+  // ── 2. PRÉ-AUTORIZAÇÃO iOS — DEVE rodar dentro do gesto ──────────
+  //    play() → pause() em cada elemento desbloqueia o áudio no iOS
+  function preAuthorizeAudio() {
+    TRACKS.forEach(function (track) {
+      var el = document.getElementById(track.id);
+      if (!el) return;
+      var p = el.play();
+      if (p && typeof p.then === 'function') {
+        p.then(function () {
+          el.pause();
+          el.currentTime = 0;
+        }).catch(function () {});
+      } else {
+        // fallback síncrono antigo (Android 4.x)
+        el.pause();
+        el.currentTime = 0;
+      }
     });
   }
 
-  // ── Fade helpers ──────────────────────────────────────────────────
-  function fadeIn(gainNode) {
-    var now = audioCtx.currentTime;
-    gainNode.gain.cancelScheduledValues(now);
-    gainNode.gain.setValueAtTime(0, now);
-    gainNode.gain.linearRampToValueAtTime(1, now + 0.28);
+  // ── Fade in via GainNode ou volume direto ─────────────────────────
+  function doFadeIn(el, gainNode) {
+    if (gainNode && audioCtx) {
+      var now = audioCtx.currentTime;
+      gainNode.gain.cancelScheduledValues(now);
+      gainNode.gain.setValueAtTime(0, now);
+      gainNode.gain.linearRampToValueAtTime(1, now + 0.28);
+    } else {
+      // sem Web Audio: fade manual via volume
+      el.volume = 0;
+      var steps = 0;
+      var iv = setInterval(function () {
+        steps++;
+        el.volume = Math.min(1, steps / 10);
+        if (steps >= 10) clearInterval(iv);
+      }, 28);
+    }
   }
 
-  function fadeOut(gainNode, cb) {
-    var now = audioCtx.currentTime;
-    gainNode.gain.cancelScheduledValues(now);
-    gainNode.gain.setValueAtTime(gainNode.gain.value, now);
-    gainNode.gain.linearRampToValueAtTime(0, now + 0.55);
-    setTimeout(cb, 600);
-  }
-
-  // ── Track end handler ─────────────────────────────────────────────
+  // ── Track end ─────────────────────────────────────────────────────
   function onTrackEnd(i) {
     if (current !== i) return;
-    statusEl.textContent = 'SINAL ENCERRADO';
+    if (statusEl) statusEl.textContent = 'SINAL ENCERRADO';
     clearTimeout(hideTimer);
     hideTimer = setTimeout(function () {
       hudEl.classList.remove('active');
@@ -1842,20 +1891,20 @@
     }, 1400);
   }
 
-  // ── Play a track ──────────────────────────────────────────────────
+  // ── Toca uma faixa ────────────────────────────────────────────────
   function playTrack(i) {
-    if (!unlocked || !audioCtx) return;
+    if (!unlocked) return;
     if (triggered[i]) return;
     triggered[i] = true;
 
-    // Stop anything currently playing
+    // Para a faixa atual
     if (playing && current >= 0) {
       var prev = document.getElementById(TRACKS[current].id);
       if (prev) { prev.pause(); prev.currentTime = 0; }
-      if (gains[current]) {
-        var now0 = audioCtx.currentTime;
-        gains[current].gain.cancelScheduledValues(now0);
-        gains[current].gain.setValueAtTime(0, now0);
+      if (gains[current] && audioCtx) {
+        var n0 = audioCtx.currentTime;
+        gains[current].gain.cancelScheduledValues(n0);
+        gains[current].gain.setValueAtTime(0, n0);
       }
       clearTimeout(hideTimer);
       stopWaveform();
@@ -1863,34 +1912,38 @@
 
     var track = TRACKS[i];
     var el    = document.getElementById(track.id);
-    var gain  = gains[i];
-    if (!el || !gain) return;
+    if (!el) return;                     // elemento não encontrado
 
-    current = i;
-    playing = true;
+    var gain  = gains[i] || null;
+    current   = i;
+    playing   = true;
 
-    if (audioCtx.state === 'suspended') audioCtx.resume();
+    // Resume AudioContext se suspenso (iOS às vezes suspende após inatividade)
+    if (audioCtx && audioCtx.state === 'suspended') {
+      audioCtx.resume().catch(function () {});
+    }
 
-    // Update HUD
-    indexEl.textContent  = track.idx;
-    statusEl.textContent = 'TRANSMITINDO';
+    // Atualiza HUD
+    if (indexEl)  indexEl.textContent  = track.idx;
+    if (statusEl) statusEl.textContent = 'TRANSMITINDO';
 
-    // Show panel (slight delay for slide-in effect)
+    // Mostra painel
     clearTimeout(hideTimer);
-    setTimeout(function () { hudEl.classList.add('active'); }, 30);
+    requestAnimationFrame(function () { hudEl.classList.add('active'); });
 
-    // Typewriter caption
+    // Caption + flash
     typeCaption(track.caption);
-
-    // Flash screen
     flashScreen();
 
     // Fade in + play
-    fadeIn(gain);
+    doFadeIn(el, gain);
     el.currentTime = 0;
-    el.play().catch(function () {});
+    el.play().catch(function (err) {
+      // Se play() falhar mesmo após pré-autorização, tenta sem Web Audio
+      el.volume = 1;
+      el.play().catch(function () {});
+    });
 
-    // Waveform + timer
     startWaveform();
     startTimer(el);
   }
@@ -1898,55 +1951,64 @@
   // ── Typewriter ────────────────────────────────────────────────────
   function typeCaption(text) {
     clearTimeout(typeTimer);
+    if (!captionEl) return;
     captionEl.innerHTML = '<span class="jhud-cursor"></span>';
     var i = 0;
     function next() {
       if (i < text.length) {
-        captionEl.innerHTML = escHtml(text.slice(0, ++i)) + '<span class="jhud-cursor"></span>';
-        typeTimer = setTimeout(next, 36 + Math.random() * 22);
+        captionEl.innerHTML = esc(text.slice(0, ++i)) + '<span class="jhud-cursor"></span>';
+        typeTimer = setTimeout(next, 34 + Math.random() * 20);
       }
     }
-    typeTimer = setTimeout(next, 180);
+    typeTimer = setTimeout(next, 160);
   }
+  function esc(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
-  function escHtml(s) {
-    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  }
-
-  // ── Waveform ──────────────────────────────────────────────────────
+  // ── Waveform (real via AnalyserNode, ou simulado como fallback) ───
   function startWaveform() {
-    if (!cCtx || !analyser) return;
+    if (!cCtx) return;
     stopWaveform();
-    var data  = new Uint8Array(analyser.frequencyBinCount);
-    var W     = canvasEl.width;
-    var H     = canvasEl.height;
-    var BARS  = 44;
-    var bW    = W / BARS;
+    simT = 0;
+    var W    = canvasEl.width;
+    var H    = canvasEl.height;
+    var BARS = 40;
+    var bW   = W / BARS;
+    var data = (analyser && webAudioOk) ? new Uint8Array(analyser.frequencyBinCount) : null;
 
     function draw() {
       rafId = requestAnimationFrame(draw);
-      analyser.getByteFrequencyData(data);
+      simT += 0.06;
+
+      if (data && analyser) analyser.getByteFrequencyData(data);
       cCtx.clearRect(0, 0, W, H);
 
       for (var b = 0; b < BARS; b++) {
-        var idx = Math.floor(b * data.length / (BARS * 1.6));
-        var v   = data[idx] / 255;
-        var h   = Math.max(2, v * H * 0.95);
-        var x   = b * bW + bW * 0.12;
-        var bw  = bW * 0.72;
+        var v;
+        if (data) {
+          var idx = Math.floor(b * data.length / (BARS * 1.5));
+          v = data[idx] / 255;
+        } else {
+          // waveform animado simulado — parece real o suficiente
+          v = 0.15 + 0.55 * Math.abs(
+            Math.sin(simT * 1.2 + b * 0.38) *
+            Math.cos(simT * 0.7 + b * 0.22) +
+            0.3 * Math.sin(simT * 2.1 + b * 0.6)
+          );
+        }
+        var h  = Math.max(2, v * H * 0.92);
+        var x  = b * bW + bW * 0.1;
+        var bw = bW * 0.75;
 
-        var gr  = cCtx.createLinearGradient(0, H - h, 0, H);
-        gr.addColorStop(0, v > 0.65 ? 'rgba(29,233,182,0.9)' : 'rgba(0,212,255,0.85)');
-        gr.addColorStop(0.5, 'rgba(0,180,230,0.5)');
-        gr.addColorStop(1,   'rgba(0,120,180,0.15)');
-
+        var gr = cCtx.createLinearGradient(0, H - h, 0, H);
+        gr.addColorStop(0,   v > 0.6 ? 'rgba(29,233,182,.95)' : 'rgba(0,212,255,.9)');
+        gr.addColorStop(0.5, 'rgba(0,170,220,.45)');
+        gr.addColorStop(1,   'rgba(0,90,160,.1)');
         cCtx.fillStyle = gr;
         cCtx.fillRect(x, H - h, bw, h);
 
-        // bright cap
-        if (v > 0.3) {
-          cCtx.fillStyle = v > 0.65 ? 'rgba(29,233,182,0.9)' : 'rgba(0,212,255,0.7)';
-          cCtx.fillRect(x, H - h - 1, bw, 1.5);
+        if (v > 0.28) {
+          cCtx.fillStyle = v > 0.6 ? 'rgba(29,233,182,.95)' : 'rgba(0,212,255,.75)';
+          cCtx.fillRect(x, H - h - 1.5, bw, 1.5);
         }
       }
     }
@@ -1955,7 +2017,7 @@
 
   function stopWaveform() {
     if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
-    if (cCtx)  cCtx.clearRect(0, 0, canvasEl.width, canvasEl.height);
+    if (cCtx && canvasEl) cCtx.clearRect(0, 0, canvasEl.width, canvasEl.height);
   }
 
   // ── Timer ─────────────────────────────────────────────────────────
@@ -1964,15 +2026,15 @@
     function tick() {
       if (!playing) return;
       var t = el.currentTime || 0;
-      var m = String(Math.floor(t / 60)).padStart(2,'0');
-      var s = String(Math.floor(t % 60)).padStart(2,'0');
-      timeEl.textContent = m + ':' + s;
+      var m = String(Math.floor(t / 60)).padStart(2, '0');
+      var s = String(Math.floor(t % 60)).padStart(2, '0');
+      if (timeEl) timeEl.textContent = m + ':' + s;
       timerRaf = requestAnimationFrame(tick);
     }
     tick();
   }
 
-  // ── Screen flash ──────────────────────────────────────────────────
+  // ── Flash de tela ─────────────────────────────────────────────────
   function flashScreen() {
     var d = document.createElement('div');
     d.className = 'j-flash';
@@ -1980,48 +2042,70 @@
     setTimeout(function () { if (d.parentNode) d.parentNode.removeChild(d); }, 950);
   }
 
-  // ── Scroll observers ─────────────────────────────────────────────
+  // ── IntersectionObserver para cada seção ─────────────────────────
   function setupObservers() {
+    var isMobile = window.innerWidth <= 768;
     var pairs = [
-      { selector: '#hero',            index: 0, margin: '0px 0px -75% 0px' },
-      { selector: '#metrics-block',   index: 1, margin: '0px' },
-      { selector: '#trigger-modulos', index: 2, margin: '0px' },
-      { selector: '#trigger-acesso',  index: 3, margin: '0px' },
-      { selector: '#cta',             index: 4, margin: '0px' }
+      { sel: '#hero',            i: 0, margin: isMobile ? '0px 0px -60% 0px' : '0px 0px -75% 0px' },
+      { sel: '#metrics-block',   i: 1, margin: '0px' },
+      { sel: '#trigger-modulos', i: 2, margin: '0px' },
+      { sel: '#trigger-acesso',  i: 3, margin: '0px' },
+      { sel: '#cta',             i: 4, margin: '0px' }
     ];
-
     pairs.forEach(function (p) {
-      var el = document.querySelector(p.selector);
+      var el = document.querySelector(p.sel);
       if (!el) return;
       var obs = new IntersectionObserver(function (entries) {
         entries.forEach(function (e) {
-          if (e.isIntersecting && !triggered[p.index]) {
-            playTrack(p.index);
+          if (e.isIntersecting && !triggered[p.i]) {
+            playTrack(p.i);
             obs.unobserve(el);
           }
         });
-      }, { threshold: 0.18, rootMargin: p.margin });
+      }, { threshold: 0.15, rootMargin: p.margin });
       obs.observe(el);
     });
   }
 
-  // ── Unlock button ─────────────────────────────────────────────────
-  if (unlockBtn) {
-    unlockBtn.addEventListener('click', function () {
-      bootAudio();
-      if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
-      unlocked = true;
+  // ── Feedback visual no botão ──────────────────────────────────────
+  function btnActivated() {
+    if (!unlockBtn) return;
+    unlockBtn.textContent = '✓ SISTEMA ATIVADO';
+    unlockBtn.style.color = '#1de9b6';
+    unlockBtn.style.borderColor = 'rgba(29,233,182,.5)';
+    setTimeout(function () {
       unlockBtn.classList.add('hidden');
       setTimeout(function () { unlockBtn.style.display = 'none'; }, 600);
-      setupObservers();
-    });
+    }, 900);
+  }
 
-    // Also unlock on any scroll/touch (silent unlock attempt)
-    var firstInteraction = function () {
-      // Only silently unlock context; button still required for first scroll
-      if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
-    };
-    window.addEventListener('scroll', firstInteraction, { once: true, passive: true });
+  // ── Botão de desbloqueio ──────────────────────────────────────────
+  function onUnlock() {
+    if (unlocked) return;
+
+    // PASSO 1: inicializa Web Audio dentro do gesto (obrigatório iOS)
+    tryBootWebAudio();
+
+    // PASSO 2: pré-autoriza todos os áudios dentro do gesto (iOS fix)
+    preAuthorizeAudio();
+
+    // PASSO 3: resume AudioContext (Chrome às vezes suspende)
+    if (audioCtx && audioCtx.state === 'suspended') {
+      audioCtx.resume().catch(function () {});
+    }
+
+    unlocked = true;
+    btnActivated();
+    setupObservers();
+  }
+
+  if (unlockBtn) {
+    // Responde a clique E toque (redundância para garantir no iOS)
+    unlockBtn.addEventListener('click',      onUnlock, { passive: false });
+    unlockBtn.addEventListener('touchstart', function (e) {
+      e.preventDefault();   // evita o 300ms delay do iOS
+      onUnlock();
+    }, { passive: false });
   }
 
 })();
