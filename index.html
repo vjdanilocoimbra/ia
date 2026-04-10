@@ -811,7 +811,7 @@
   }
 
   /* ══════════════════════════════════════════════════════════════════════
-     JARVIS AUDIO SYSTEM — HUD & Waveform
+     N.E.X.U.S. AUDIO SYSTEM — HUD & Waveform
   ══════════════════════════════════════════════════════════════════════ */
 
   /* ── Unlock button ─────────────────────────────────────────────────── */
@@ -853,8 +853,8 @@
     50%      { box-shadow: 0 0 22px rgba(0,212,255,.65), 0 0 44px rgba(0,212,255,.2); }
   }
 
-  /* ── JARVIS Speaking Panel ─────────────────────────────────────────── */
-  #jarvis-hud {
+  /* ── N.E.X.U.S Speaking Panel ─────────────────────────────────────────── */
+  #nexus-hud {
     position: fixed;
     bottom: 28px; right: 28px;
     z-index: 9998;
@@ -869,17 +869,17 @@
     opacity: 0;
     pointer-events: none;
   }
-  #jarvis-hud.active { transform: translateX(0); opacity: 1; }
+  #nexus-hud.active { transform: translateX(0); opacity: 1; }
 
   /* Corner brackets */
-  #jarvis-hud::before,
-  #jarvis-hud::after {
+  #nexus-hud::before,
+  #nexus-hud::after {
     content: ''; position: absolute;
     width: 12px; height: 12px;
     border-color: var(--c1); border-style: solid; opacity: .6;
   }
-  #jarvis-hud::before { top: -1px;    left: -1px;  border-width: 2px 0 0 2px; }
-  #jarvis-hud::after  { bottom: -1px; right: -1px; border-width: 0 2px 2px 0; }
+  #nexus-hud::before { top: -1px;    left: -1px;  border-width: 2px 0 0 2px; }
+  #nexus-hud::after  { bottom: -1px; right: -1px; border-width: 0 2px 2px 0; }
 
   /* Extra top-right & bottom-left corners via pseudo on inner div */
   #jhud-inner::before,
@@ -961,7 +961,7 @@
 
   /* ── Mobile adjustments ─────────────────────────────────────────────── */
   @media (max-width: 480px) {
-    #jarvis-hud { width: calc(100vw - 32px); right: 16px; bottom: 16px; }
+    #nexus-hud { width: calc(100vw - 32px); right: 16px; bottom: 16px; }
     #audio-unlock { font-size: 8px; padding: 9px 20px; letter-spacing: 2.5px; }
   }
 </style>
@@ -1723,7 +1723,7 @@
 </script>
 
 <!-- ════════════════════════════════════════════════════════════════════════
-     JARVIS AUDIO SYSTEM
+     NEXUS AUDIO SYSTEM
 ════════════════════════════════════════════════════════════════════════ -->
 
 <!-- Hidden audio elements (loaded on page init) -->
@@ -1734,15 +1734,15 @@
 <audio id="aud5" src="audio/5.mp3" preload="auto" crossorigin="anonymous" playsinline></audio>
 
 <!-- Unlock button -->
-<button id="audio-unlock" aria-label="Ativar sistema de áudio JARVIS">◆ ATIVAR SISTEMA DE ÁUDIO ◆</button>
+<button id="audio-unlock" aria-label="Ativar sistema de áudio N.e.x.u.s.">◆ ATIVAR SISTEMA DE ÁUDIO ◆</button>
 
-<!-- JARVIS Speaking HUD -->
-<div id="jarvis-hud" role="status" aria-live="polite">
+<!-- N.E.X.U.S. Speaking HUD -->
+<div id="nexus-hud" role="status" aria-live="polite">
   <div class="jhud-scan"></div>
   <div id="jhud-inner">
     <div class="jhud-header">
       <span class="jhud-dot"></span>
-      <span class="jhud-title">JARVIS · TRANSMITINDO</span>
+      <span class="jhud-title">Nexus · TRANSMITINDO</span>
       <span class="jhud-index" id="jhud-index">01 / 05</span>
     </div>
     <div id="jhud-caption"><span class="jhud-cursor"></span></div>
@@ -1756,7 +1756,7 @@
 
 <script>
 // ════════════════════════════════════════════════════════════════════════
-// 8. JARVIS CINEMATIC AUDIO SYSTEM  v2 — mobile-first fixes
+// 8. NEXUS CINEMATIC AUDIO SYSTEM  v2 — mobile-first fixes
 //    • iOS pre-authorization via play/pause in gesture handler
 //    • try/catch em todo Web Audio API (graceful degradation)
 //    • waveform simulado como fallback quando Web Audio falha
@@ -1775,7 +1775,7 @@
   ];
 
   // ── DOM refs ──────────────────────────────────────────────────────
-  var hudEl     = document.getElementById('jarvis-hud');
+  var hudEl     = document.getElementById('nexus-hud');
   var captionEl = document.getElementById('jhud-caption');
   var indexEl   = document.getElementById('jhud-index');
   var statusEl  = document.getElementById('jhud-status');
