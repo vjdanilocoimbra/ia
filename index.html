@@ -1,10 +1,8 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
+<html lang="pt-BR"><head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CRIE SUA PRÓPRIA IA // DANILO COIMBRA</title>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Exo+2:wght@300;400;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&amp;family=Exo+2:wght@300;400;600;700&amp;family=Share+Tech+Mono&amp;display=swap" rel="stylesheet">
     <style>
         :root {
             --c0: #020b18;
@@ -1728,17 +1726,15 @@
 </head>
 <body>
     <!-- Audio unlock — fixed no topo, acompanha scroll -->
-    <button id="audio-unlock">
-        ◆ ATIVAR SISTEMA DE ÁUDIO ◆
-    </button>
+    
 
-    <canvas id="bg-canvas"></canvas>
+    <canvas id="bg-canvas" width="1997" height="948"></canvas>
     <div class="scan-overlay"></div>
 
     <div class="page-wrap">
         <!-- HERO -->
         <section id="hero">
-            <div id="boot-log"></div>
+            <div id="boot-log"><div class="boot-line">&gt; SYSTEM BOOT v2.4...</div><div class="boot-line">&gt; NEURAL CORE: ONLINE</div><div class="boot-line">&gt; IA INICIALIZADA. CONTROLE ATIVO.</div><div class="boot-line">&gt; DANILO COIMBRA // SISTEMA PRONTO</div></div>
 
             <div class="orb-wrap">
                 <canvas id="orb-canvas" width="380" height="380"></canvas>
@@ -1748,10 +1744,10 @@
                 </div>
                 <div class="orb-mic">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                        <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
-                        <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
-                        <line x1="12" y1="19" x2="12" y2="23"/>
-                        <line x1="8" y1="23" x2="16" y2="23"/>
+                        <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                        <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                        <line x1="12" y1="19" x2="12" y2="23"></line>
+                        <line x1="8" y1="23" x2="16" y2="23"></line>
                     </svg>
                 </div>
                 <div class="orb-hud-label top-left">STATE<span class="orb-hud-val">LOW</span></div>
@@ -1795,7 +1791,7 @@
             </div>
 
             <!-- TERMINAL DEMO — live typing -->
-            <div class="hero-terminal" id="hero-terminal"></div>
+            <div class="hero-terminal" id="hero-terminal"><div class="term-prompt" style="opacity: 1; transform: translateX(0px); transition: 0.3s;">$ python server.py</div><div class="term-output" style="opacity: 1; transform: translateX(0px); transition: 0.3s;">[NEXUS] Voice Service v2 — </div></div>
 
             <div class="scroll-hint">
                 <span>SCROLL</span>
@@ -1807,26 +1803,26 @@
         </section>
 
         <!-- METRICS -->
-        <section id="metrics-block" class="reveal" data-delay="1">
+        <section id="metrics-block" class="reveal visible" data-delay="1">
             <div class="section-divider">DADOS DO SISTEMA</div>
             <div class="metrics-grid" style="--d: 0s;">
                 <div class="metric-card">
-                    <div class="metric-value"><span class="count" data-target="27">0</span></div>
+                    <div class="metric-value"><span class="count" data-target="27">27</span></div>
                     <div class="metric-label">FERRAMENTAS DE VOZ</div>
                 </div>
                 <div class="metric-card" style="--d: .15s;">
-                    <div class="metric-value"><span class="count" data-target="7">0</span></div>
+                    <div class="metric-value"><span class="count" data-target="7">7</span></div>
                     <div class="metric-label">MÓDULOS COMPLETOS</div>
                 </div>
                 <div class="metric-card" style="--d: .3s;">
-                    <div class="metric-value"><span class="count" data-target="100">0</span>%</div>
+                    <div class="metric-value"><span class="count" data-target="100">100</span>%</div>
                     <div class="metric-label">CONSTRUÍDO NA PRÁTICA</div>
                 </div>
             </div>
         </section>
 
         <!-- MODULES -->
-        <section id="trigger-modulos" class="reveal" data-delay="3">
+        <section id="trigger-modulos" class="reveal visible" data-delay="3">
             <div class="section-divider">MÓDULOS ATIVOS</div>
 
             <div class="holo-card" data-id="M-01">
@@ -1834,53 +1830,53 @@
                 <div class="card-body">
                     De um PC recém-formatado a uma IA respondendo. Instale Python, Node.js, configure a API e faça sua <strong>primeira conversa com a IA pelo prompt</strong>.
                 </div>
-            </div>
+            <div class="holo-shimmer"></div><div class="holo-shimmer"></div></div>
 
             <div class="holo-card" data-id="M-02">
                 <div class="card-title">MÓDULO 2 — CONSCIÊNCIA</div>
                 <div class="card-body">
                     Dê personalidade, memória persistente e consciência contextual à sua IA. Ela <strong>lembra de você para sempre</strong> e sabe o que está acontecendo no seu PC.
                 </div>
-            </div>
+            <div class="holo-shimmer"></div><div class="holo-shimmer"></div></div>
 
             <div class="holo-card" data-id="M-03">
                 <div class="card-title">MÓDULO 3 — A INTERFACE</div>
                 <div class="card-body">
                     Construa o painel holográfico de controle com visual futurista. <strong>Partículas, hex grid, visualização cerebral</strong> e converse com a IA por aplicativo próprio.
                 </div>
-            </div>
+            <div class="holo-shimmer"></div><div class="holo-shimmer"></div></div>
 
             <div class="holo-card" data-id="M-04">
                 <div class="card-title">MÓDULO 4 — CONTROLE TOTAL</div>
                 <div class="card-body">
                     27 ferramentas de voz para dominar o Windows. <strong>Spotify, browser, arquivos, screenshot, análise de tela</strong> — seu PC obedece a IA.
                 </div>
-            </div>
+            <div class="holo-shimmer"></div><div class="holo-shimmer"></div></div>
 
             <div class="holo-card" data-id="M-05">
                 <div class="card-title">MÓDULO 5 — COMUNICAÇÃO INTEGRADA</div>
                 <div class="card-body">
                     Integre <strong>Telegram e WhatsApp</strong> pessoal à sua IA. Envie e receba mensagens, fotos e documentos com confirmação visual holográfica.
                 </div>
-            </div>
+            <div class="holo-shimmer"></div><div class="holo-shimmer"></div></div>
 
             <div class="holo-card" data-id="M-06">
                 <div class="card-title">MÓDULO 6 — CASA INTELIGENTE</div>
                 <div class="card-body">
                     Conecte sua IA ao Home Assistant. <strong>"Acende a luz do quarto"</strong>, controle a TV, monitore sensores — tudo por voz.
                 </div>
-            </div>
+            <div class="holo-shimmer"></div><div class="holo-shimmer"></div></div>
 
             <div class="holo-card" data-id="M-07">
                 <div class="card-title">MÓDULO 7 — VOZES ÚNICAS (BÔNUS)</div>
                 <div class="card-body">
                     Clonagem de voz e personalidades temáticas. <strong>Altere a voz e personalidade da IA em apenas um click.</strong> Overlay holográfico e automações agendadas.
                 </div>
-            </div>
+            <div class="holo-shimmer"></div><div class="holo-shimmer"></div></div>
         </section>
 
         <!-- DEMO FRAME — live system preview -->
-        <section class="reveal" data-delay="2">
+        <section class="reveal visible" data-delay="2">
             <div class="section-divider">PREVIEW DO SISTEMA</div>
             <div class="demo-frame">
                 <canvas id="demo-canvas" width="640" height="220"></canvas>
@@ -1890,12 +1886,12 @@
 
             <!-- Power grid — system capabilities -->
             <div class="power-grid" id="power-grid">
-                <div class="power-bar" style="--pwr:97%"><div class="power-label">CONTROLE DO PC</div><div class="power-value">97%</div></div>
-                <div class="power-bar" style="--pwr:95%"><div class="power-label">RECONHECIMENTO DE VOZ</div><div class="power-value">95%</div></div>
-                <div class="power-bar" style="--pwr:98%"><div class="power-label">MEMÓRIA PERSISTENTE</div><div class="power-value">98%</div></div>
-                <div class="power-bar" style="--pwr:92%"><div class="power-label">AUTOMAÇÃO RESIDENCIAL</div><div class="power-value">92%</div></div>
-                <div class="power-bar" style="--pwr:90%"><div class="power-label">INTEGRAÇÃO WHATSAPP</div><div class="power-value">90%</div></div>
-                <div class="power-bar" style="--pwr:94%"><div class="power-label">SÍNTESE DE VOZ</div><div class="power-value">94%</div></div>
+                <div class="power-bar active" style="--pwr:97%"><div class="power-label">CONTROLE DO PC</div><div class="power-value">97%</div></div>
+                <div class="power-bar active" style="--pwr:95%"><div class="power-label">RECONHECIMENTO DE VOZ</div><div class="power-value">95%</div></div>
+                <div class="power-bar active" style="--pwr:98%"><div class="power-label">MEMÓRIA PERSISTENTE</div><div class="power-value">98%</div></div>
+                <div class="power-bar active" style="--pwr:92%"><div class="power-label">AUTOMAÇÃO RESIDENCIAL</div><div class="power-value">92%</div></div>
+                <div class="power-bar active" style="--pwr:90%"><div class="power-label">INTEGRAÇÃO WHATSAPP</div><div class="power-value">90%</div></div>
+                <div class="power-bar active" style="--pwr:94%"><div class="power-label">SÍNTESE DE VOZ</div><div class="power-value">94%</div></div>
             </div>
         </section>
 
@@ -1922,7 +1918,7 @@
         </div>
 
         <!-- DIAGNOSIS SECTION -->
-        <section class="reveal" data-delay="4">
+        <section class="reveal visible" data-delay="4">
             <div class="section-divider">DIAGNÓSTICO</div>
 
             <div class="problem-wrap">
@@ -1938,7 +1934,7 @@
         </section>
 
         <!-- MODULES AGAIN (what you'll learn) -->
-        <section class="reveal" data-delay="1">
+        <section class="reveal visible" data-delay="1">
             <div class="section-divider">MÓDULOS DO SISTEMA</div>
 
             <div class="learn-list">
@@ -2001,8 +1997,8 @@
         </section>
 
         <!-- ACCESS & BONUS -->
-        <section id="trigger-acesso" class="reveal" data-delay="2">
-            <div class="section-divider">ACESSO & BÔNUS</div>
+        <section id="trigger-acesso" class="reveal visible" data-delay="2">
+            <div class="section-divider">ACESSO &amp; BÔNUS</div>
 
             <div class="two-col">
                 <div class="holo-card" data-id="WHO">
@@ -2016,7 +2012,7 @@
                             <div class="bonus-item">Cansado de teoria</div>
                         </div>
                     </div>
-                </div>
+                <div class="holo-shimmer"></div><div class="holo-shimmer"></div></div>
 
                 <div class="holo-card" data-id="BONUS">
                     <div class="card-title">BÔNUS INCLUSOS</div>
@@ -2030,42 +2026,15 @@
                             <span class="tag-pill"><span class="ti">✓</span> 7 perfis de voz</span>
                         </div>
                     </div>
-                </div>
+                <div class="holo-shimmer"></div><div class="holo-shimmer"></div></div>
             </div>
         </section>
 
         <!-- DIFFERENTIATOR -->
-        <section class="reveal" data-delay="3">
-            <div class="section-divider">DIFERENCIAL</div>
-
-            <div class="diff-banner">
-                <div class="diff-tag">// O QUE NOS SEPARA</div>
-                <div class="diff-main">Aqui você não aprende teoria.<br>Você constrói uma IA funcional de verdade.</div>
-                <p class="diff-sub">
-                    O mesmo sistema que roda todos os dias na máquina do Danilo — <strong>você vai replicar, adaptar e fazer seu.</strong>
-                </p>
-
-                <div class="diff-compare">
-                    <div class="diff-col">
-                        <div class="diff-col-title neg">❌ OUTROS CURSOS</div>
-                        <div class="diff-row"><span class="icon">·</span> Só teoria e slides</div>
-                        <div class="diff-row"><span class="icon">·</span> APIs prontas, sem entender</div>
-                        <div class="diff-row"><span class="icon">·</span> IA que não faz nada útil</div>
-                        <div class="diff-row"><span class="icon">·</span> Sem personalidade</div>
-                    </div>
-                    <div class="diff-col">
-                        <div class="diff-col-title pos">✅ ESTE CURSO</div>
-                        <div class="diff-row"><span class="icon">·</span> Constrói módulo por módulo</div>
-                        <div class="diff-row"><span class="icon">·</span> 27 ferramentas reais</div>
-                        <div class="diff-row"><span class="icon">·</span> Controla PC, casa e celular</div>
-                        <div class="diff-row"><span class="icon">·</span> IA com voz e personalidade sua</div>
-                    </div>
-                </div>
-            </div>
-        </section>
+        
 
         <!-- JOURNEY -->
-        <section class="reveal" data-delay="4">
+        <section class="reveal visible" data-delay="4">
             <div class="section-divider">JORNADA DE CONSTRUÇÃO</div>
 
             <div class="timeline">
@@ -2119,7 +2088,7 @@
         </section>
 
         <!-- CTA SECTION -->
-        <section id="cta" class="reveal" data-delay="1">
+        <section id="cta" class="reveal visible" data-delay="1">
             <div class="cta-badge">▸ PROTOCOLO DE ACESSO INICIANDO</div>
 
             <h2 class="cta-title">SUA IA.<br>DO ZERO. DO SEU JEITO.</h2>
@@ -2160,7 +2129,7 @@
         </section>
 
         <!-- Social -->
-        <section class="reveal" data-delay="2">
+        <section class="reveal visible" data-delay="2">
             <div class="social-row">
                 <a href="https://www.instagram.com/vjdanilocoimbra" class="social-link" target="_blank">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -2179,11 +2148,11 @@
     </div>
 
     <!-- Audio tracks (hidden) -->
-    <audio id="aud1" preload="none"></audio>
-    <audio id="aud2" preload="none"></audio>
-    <audio id="aud3" preload="none"></audio>
-    <audio id="aud4" preload="none"></audio>
-    <audio id="aud5" preload="none"></audio>
+    
+    
+    
+    
+    
 
     <script>
         // ════════════════════════════════════════════════════════════════════════
@@ -3400,5 +3369,6 @@
         banner.appendChild(rain);
     })();
     </script>
-</body>
-</html>
+
+
+</body></html>
