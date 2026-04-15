@@ -1,8 +1,9 @@
 <html lang="pt-BR"><head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CRIE SUA PRÓPRIA IA // DANILO COIMBRA</title>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&amp;family=Exo+2:wght@300;400;600;700&amp;family=Share+Tech+Mono&amp;display=swap" rel="stylesheet">
+    <title>IA // Construa Sua Propria IA do Zero</title>
+    <meta name="description" content="Sistema completo de IA pessoal com voz, memoria, automacao e controle total. Codigo-fonte + curso em portugues.">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Exo+2:wght@300;400;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <style>
         :root {
             --c0: #020b18;
@@ -18,15 +19,8 @@
             --font-mono: 'Share Tech Mono', monospace;
         }
 
-        *, *::before, *::after {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        html {
-            scroll-behavior: smooth;
-        }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; }
 
         body {
             background: var(--c0);
@@ -35,1712 +29,405 @@
             overflow-x: hidden;
         }
 
-        ::-webkit-scrollbar {
-            width: 4px;
-        }
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: #030e1e; }
+        ::-webkit-scrollbar-thumb { background: var(--c1); border-radius: 2px; }
 
-        ::-webkit-scrollbar-track {
-            background: #030e1e;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: var(--c1);
-            border-radius: 2px;
-        }
-
-        #bg-canvas {
-            position: fixed;
-            inset: 0;
-            z-index: 0;
-            pointer-events: none;
-        }
+        #bg-canvas { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
 
         .scan-overlay {
-            position: fixed;
-            inset: 0;
-            z-index: 1;
-            pointer-events: none;
-            background: repeating-linear-gradient(
-                0deg,
-                transparent,
-                transparent 2px,
-                rgba(0,0,0,0.03) 2px,
-                rgba(0,0,0,0.03) 4px
-            );
+            position: fixed; inset: 0; z-index: 1; pointer-events: none;
+            background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px);
         }
-
         .scan-overlay::after {
-            content: '';
-            position: absolute;
-            left: 0;
-            right: 0;
-            height: 3px;
+            content: ''; position: absolute; left: 0; right: 0; height: 3px;
             background: linear-gradient(90deg, transparent, var(--c1), transparent);
-            opacity: 0.15;
-            animation: scanline 6s linear infinite;
+            opacity: 0.15; animation: scanline 6s linear infinite;
         }
+        @keyframes scanline { 0% { top: -4px; } 100% { top: 100vh; } }
 
-        @keyframes scanline {
-            0% { top: -4px; }
-            100% { top: 100vh; }
-        }
+        .hud-corner { position: fixed; width: 60px; height: 60px; z-index: 10; pointer-events: none; }
+        .hud-corner svg { width: 100%; height: 100%; }
+        .hud-corner--tl { top: 16px; left: 16px; }
+        .hud-corner--tr { top: 16px; right: 16px; transform: scaleX(-1); }
+        .hud-corner--bl { bottom: 16px; left: 16px; transform: scaleY(-1); }
+        .hud-corner--br { bottom: 16px; right: 16px; transform: scale(-1); }
 
-        .hud-corner {
-            position: fixed;
-            width: 60px;
-            height: 60px;
-            z-index: 10;
-            pointer-events: none;
-        }
-
-        .hud-corner svg {
-            width: 100%;
-            height: 100%;
-        }
-
-        .hud-corner--tl {
-            top: 16px;
-            left: 16px;
-        }
-
-        .hud-corner--tr {
-            top: 16px;
-            right: 16px;
-            transform: scaleX(-1);
-        }
-
-        .hud-corner--bl {
-            bottom: 16px;
-            left: 16px;
-            transform: scaleY(-1);
-        }
-
-        .hud-corner--br {
-            bottom: 16px;
-            right: 16px;
-            transform: scale(-1);
-        }
-
-        .page-wrap {
-            position: relative;
-            z-index: 2;
-            max-width: 680px;
-            margin: 0 auto;
-            padding: 0 20px 120px;
-        }
+        .page-wrap { position: relative; z-index: 2; max-width: 680px; margin: 0 auto; padding: 0 20px 120px; }
 
         #hero {
-            min-height: 100svh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            padding-top: 60px;
-            gap: 0;
+            min-height: 100svh; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; text-align: center;
+            padding-top: 60px; gap: 0;
         }
 
         #boot-log {
-            font-family: var(--font-mono);
-            font-size: 11px;
-            color: var(--c2);
-            letter-spacing: .08em;
-            opacity: .7;
-            height: 56px;
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-end;
-            margin-bottom: 36px;
-            text-align: left;
-            width: 100%;
-            max-width: 440px;
+            font-family: var(--font-mono); font-size: 11px; color: var(--c2);
+            letter-spacing: .08em; opacity: .7; height: 56px;
+            display: flex; flex-direction: column; justify-content: flex-end;
+            margin-bottom: 36px; text-align: left; width: 100%; max-width: 440px;
         }
+        .boot-line { animation: bootFade .3s ease both; }
+        @keyframes bootFade { from { opacity: 0; transform: translateX(-6px); } to { opacity: 1; transform: translateX(0); } }
 
-        .boot-line {
-            animation: bootFade .3s ease both;
-        }
-
-        @keyframes bootFade {
-            from {
-                opacity: 0;
-                transform: translateX(-6px);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
-        }
-
-        .orb-wrap {
-            position: relative;
-            width: 380px;
-            height: 380px;
-            margin-bottom: 20px;
-        }
-
-        #orb-canvas {
-            width: 380px;
-            height: 380px;
-        }
-
-        .orb-status {
-            position: absolute;
-            bottom: 32px;
-            left: 50%;
-            transform: translateX(-50%);
-            text-align: center;
-            pointer-events: none;
-            z-index: 2;
-        }
-
-        .orb-status-ready {
-            font-family: var(--font-hud);
-            font-size: 15px;
-            letter-spacing: .45em;
-            color: #fff;
-            text-shadow: var(--glow1);
-            margin-bottom: 4px;
-        }
-
-        .orb-status-ver {
-            font-family: var(--font-mono);
-            font-size: 8px;
-            letter-spacing: .2em;
-            color: rgba(0,212,255,.35);
-        }
-
+        .orb-wrap { position: relative; width: 380px; height: 380px; margin-bottom: 20px; }
+        #orb-canvas { width: 380px; height: 380px; }
+        .orb-status { position: absolute; bottom: 32px; left: 50%; transform: translateX(-50%); text-align: center; pointer-events: none; z-index: 2; }
+        .orb-status-ready { font-family: var(--font-hud); font-size: 15px; letter-spacing: .45em; color: #fff; text-shadow: var(--glow1); margin-bottom: 4px; }
+        .orb-status-ver { font-family: var(--font-mono); font-size: 8px; letter-spacing: .2em; color: rgba(0,212,255,.35); }
         .orb-mic {
-            position: absolute;
-            bottom: -18px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 48px;
-            height: 48px;
-            border-radius: 50%;
-            border: 1.5px solid rgba(0,212,255,.35);
-            background: rgba(0,8,22,.7);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 3;
-            cursor: default;
-            box-shadow: 0 0 20px rgba(0,212,255,.15), inset 0 0 12px rgba(0,212,255,.05);
+            position: absolute; bottom: -18px; left: 50%; transform: translateX(-50%);
+            width: 48px; height: 48px; border-radius: 50%;
+            border: 1.5px solid rgba(0,212,255,.35); background: rgba(0,8,22,.7);
+            display: flex; align-items: center; justify-content: center; z-index: 3;
+            cursor: default; box-shadow: 0 0 20px rgba(0,212,255,.15), inset 0 0 12px rgba(0,212,255,.05);
         }
-
-        .orb-mic svg {
-            width: 18px;
-            height: 18px;
-            color: var(--c1);
-            opacity: .7;
-        }
-
-        .orb-hud-label {
-            position: absolute;
-            font-family: var(--font-mono);
-            font-size: 8px;
-            letter-spacing: .15em;
-            color: rgba(0,212,255,.3);
-            pointer-events: none;
-            white-space: nowrap;
-        }
-
+        .orb-mic svg { width: 18px; height: 18px; color: var(--c1); opacity: .7; }
+        .orb-hud-label { position: absolute; font-family: var(--font-mono); font-size: 8px; letter-spacing: .15em; color: rgba(0,212,255,.3); pointer-events: none; white-space: nowrap; }
         .orb-hud-label.top-left { top: 28px; left: 16px; }
         .orb-hud-label.top-right { top: 28px; right: 16px; }
         .orb-hud-label.bot-left { bottom: 60px; left: 16px; }
         .orb-hud-label.bot-right { bottom: 60px; right: 16px; }
-
-        .orb-hud-val {
-            font-family: var(--font-hud);
-            font-size: 14px;
-            color: rgba(0,212,255,.45);
-            display: block;
-            margin-top: 2px;
-        }
+        .orb-hud-val { font-family: var(--font-hud); font-size: 14px; color: rgba(0,212,255,.45); display: block; margin-top: 2px; }
 
         @media (max-width: 480px) {
-            .orb-wrap {
-                width: 300px;
-                height: 300px;
-            }
-            #orb-canvas {
-                width: 300px;
-                height: 300px;
-            }
+            .orb-wrap { width: 300px; height: 300px; }
+            #orb-canvas { width: 300px; height: 300px; }
             .orb-hud-label { display: none; }
         }
 
         .hero-name {
-            font-family: var(--font-hud);
-            font-size: clamp(22px, 5.5vw, 38px);
-            font-weight: 900;
-            letter-spacing: .08em;
-            line-height: 1.15;
-            color: #fff;
-            text-shadow: var(--glow1);
-            position: relative;
-            margin-bottom: 10px;
-            max-width: 520px;
+            font-family: var(--font-hud); font-size: clamp(22px, 5.5vw, 38px);
+            font-weight: 900; letter-spacing: .08em; line-height: 1.15;
+            color: #fff; text-shadow: var(--glow1); position: relative;
+            margin-bottom: 10px; max-width: 520px;
         }
+        .hero-name .glitch { position: relative; display: inline-block; }
+        .hero-name .glitch::before, .hero-name .glitch::after {
+            content: attr(data-text); position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: var(--c0);
+        }
+        .hero-name .glitch::before { color: var(--c1); clip-path: polygon(0 30%, 100% 30%, 100% 50%, 0 50%); animation: glitchA 4s steps(1) infinite; }
+        .hero-name .glitch::after { color: var(--c2); clip-path: polygon(0 60%, 100% 60%, 100% 75%, 0 75%); animation: glitchB 4s steps(1) infinite; }
 
-        .hero-name .glitch {
-            position: relative;
-            display: inline-block;
-        }
+        .hero-instructor { font-family: var(--font-mono); font-size: 11px; letter-spacing: .28em; color: rgba(0,212,255,.5); margin-bottom: 14px; text-transform: uppercase; }
+        .hero-instructor span { color: rgba(255,255,255,.2); margin: 0 8px; }
 
-        .hero-name .glitch::before,
-        .hero-name .glitch::after {
-            content: attr(data-text);
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: var(--c0);
-        }
+        @keyframes glitchA { 0%,95%,100% { transform: translate(0); opacity: 0; } 96% { transform: translate(-3px, 1px); opacity: .8; } 97% { transform: translate(3px, -1px); opacity: .8; } 98% { transform: translate(0); opacity: 0; } }
+        @keyframes glitchB { 0%,96%,100% { transform: translate(0); opacity: 0; } 97% { transform: translate(3px, 2px); opacity: .6; } 98% { transform: translate(-2px, -1px); opacity: .6; } 99% { transform: translate(0); opacity: 0; } }
 
-        .hero-name .glitch::before {
-            color: var(--c1);
-            clip-path: polygon(0 30%, 100% 30%, 100% 50%, 0 50%);
-            animation: glitchA 4s steps(1) infinite;
-        }
+        .hero-tag { font-family: var(--font-hud); font-size: 11px; letter-spacing: .35em; color: var(--c1); text-transform: uppercase; margin-bottom: 18px; opacity: .8; }
+        .hero-tag span { color: rgba(255,255,255,.25); margin: 0 6px; }
+        .hero-bio { font-size: 15px; font-weight: 300; line-height: 1.7; color: rgba(200,232,245,.7); max-width: 420px; margin-bottom: 36px; }
+        .hero-bio strong { color: var(--c2); font-weight: 600; }
 
-        .hero-name .glitch::after {
-            color: var(--c2);
-            clip-path: polygon(0 60%, 100% 60%, 100% 75%, 0 75%);
-            animation: glitchB 4s steps(1) infinite;
-        }
+        .status-row { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin-bottom: 52px; }
+        .status-chip { display: flex; align-items: center; gap: 7px; background: rgba(0,212,255,.06); border: 1px solid rgba(0,212,255,.18); border-radius: 4px; padding: 6px 14px; font-family: var(--font-mono); font-size: 11px; color: var(--c1); letter-spacing: .06em; }
+        .status-chip .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--c2); box-shadow: 0 0 6px var(--c2); animation: pulse 2s ease-in-out infinite; }
+        .status-chip .dot.amber { background: #ffd166; box-shadow: 0 0 6px #ffd16688; }
+        @keyframes pulse { 0%,100% { opacity: 1; transform: scale(1); } 50% { opacity: .5; transform: scale(.7); } }
 
-        .hero-instructor {
-            font-family: var(--font-mono);
-            font-size: 11px;
-            letter-spacing: .28em;
-            color: rgba(0,212,255,.5);
-            margin-bottom: 14px;
-            text-transform: uppercase;
-        }
-
-        .hero-instructor span {
-            color: rgba(255,255,255,.2);
-            margin: 0 8px;
-        }
-
-        @keyframes glitchA {
-            0%,95%,100% { transform: translate(0); opacity: 0; }
-            96% { transform: translate(-3px, 1px); opacity: .8; }
-            97% { transform: translate(3px, -1px); opacity: .8; }
-            98% { transform: translate(0); opacity: 0; }
-        }
-
-        @keyframes glitchB {
-            0%,96%,100% { transform: translate(0); opacity: 0; }
-            97% { transform: translate(3px, 2px); opacity: .6; }
-            98% { transform: translate(-2px, -1px); opacity: .6; }
-            99% { transform: translate(0); opacity: 0; }
-        }
-
-        .hero-tag {
-            font-family: var(--font-hud);
-            font-size: 11px;
-            letter-spacing: .35em;
-            color: var(--c1);
-            text-transform: uppercase;
-            margin-bottom: 18px;
-            opacity: .8;
-        }
-
-        .hero-tag span {
-            color: rgba(255,255,255,.25);
-            margin: 0 6px;
-        }
-
-        .hero-bio {
-            font-size: 15px;
-            font-weight: 300;
-            line-height: 1.7;
-            color: rgba(200,232,245,.7);
-            max-width: 380px;
-            margin-bottom: 36px;
-        }
-
-        .hero-bio strong {
-            color: var(--c2);
-            font-weight: 600;
-        }
-
-        .status-row {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            justify-content: center;
-            margin-bottom: 52px;
-        }
-
-        .status-chip {
-            display: flex;
-            align-items: center;
-            gap: 7px;
-            background: rgba(0,212,255,.06);
-            border: 1px solid rgba(0,212,255,.18);
-            border-radius: 4px;
-            padding: 6px 14px;
-            font-family: var(--font-mono);
-            font-size: 11px;
-            color: var(--c1);
-            letter-spacing: .06em;
-        }
-
-        .status-chip .dot {
-            width: 6px;
-            height: 6px;
-            border-radius: 50%;
-            background: var(--c2);
-            box-shadow: 0 0 6px var(--c2);
-            animation: pulse 2s ease-in-out infinite;
-        }
-
-        .status-chip .dot.amber {
-            background: #ffd166;
-            box-shadow: 0 0 6px #ffd16688;
-        }
-
-        @keyframes pulse {
-            0%,100% { opacity: 1; transform: scale(1); }
-            50% { opacity: .5; transform: scale(.7); }
-        }
-
-        .scroll-hint {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 8px;
-            font-family: var(--font-mono);
-            font-size: 10px;
-            color: rgba(0,212,255,.4);
-            letter-spacing: .2em;
-            animation: hintBob 2.5s ease-in-out infinite;
-        }
-
-        .scroll-hint svg {
-            opacity: .5;
-        }
-
-        @keyframes hintBob {
-            0%,100% { transform: translateY(0); opacity: .4; }
-            50% { transform: translateY(8px); opacity: .8; }
-        }
+        .scroll-hint { display: flex; flex-direction: column; align-items: center; gap: 8px; font-family: var(--font-mono); font-size: 10px; color: rgba(0,212,255,.4); letter-spacing: .2em; animation: hintBob 2.5s ease-in-out infinite; }
+        .scroll-hint svg { opacity: .5; }
+        @keyframes hintBob { 0%,100% { transform: translateY(0); opacity: .4; } 50% { transform: translateY(8px); opacity: .8; } }
 
         .section-divider {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin: 80px 0 40px;
-            font-family: var(--font-hud);
-            font-size: 10px;
-            letter-spacing: .3em;
-            color: rgba(0,212,255,.4);
-            text-transform: uppercase;
+            display: flex; align-items: center; gap: 12px; margin: 80px 0 40px;
+            font-family: var(--font-hud); font-size: 10px; letter-spacing: .3em;
+            color: rgba(0,212,255,.4); text-transform: uppercase; position: relative;
         }
+        .section-divider::before, .section-divider::after { content: ''; flex: 1; height: 1px; background: linear-gradient(90deg, transparent, rgba(0,212,255,.3), transparent); animation: divPulse 3s ease-in-out infinite; }
+        @keyframes divPulse { 0%,100% { opacity: .3; } 50% { opacity: .8; } }
 
-        .section-divider::before,
-        .section-divider::after {
-            content: '';
-            flex: 1;
-            height: 1px;
-            background: linear-gradient(90deg, transparent, rgba(0,212,255,.3), transparent);
-        }
-
-        .metrics-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 12px;
-            margin-bottom: 16px;
-        }
-
+        .metrics-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px; }
         .metric-card {
-            background: rgba(0,212,255,.04);
-            border: 1px solid rgba(0,212,255,.15);
-            border-radius: 6px;
-            padding: 20px 14px 14px;
-            text-align: center;
-            position: relative;
-            overflow: hidden;
-            transition: border-color .3s, background .3s;
+            background: rgba(0,212,255,.04); border: 1px solid rgba(0,212,255,.15);
+            border-radius: 6px; padding: 20px 14px 14px; text-align: center;
+            position: relative; overflow: hidden; transition: border-color .3s, background .3s;
         }
-
-        .metric-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 2px;
-            background: linear-gradient(90deg, transparent, var(--c1), transparent);
-            animation: metricScan 3s linear infinite;
-            animation-delay: var(--d, 0s);
-        }
-
-        @keyframes metricScan {
-            0% { transform: translateX(-100%); opacity: 0; }
-            50% { opacity: 1; }
-            100% { transform: translateX(100%); opacity: 0; }
-        }
-
-        .metric-card:hover {
-            border-color: rgba(0,212,255,.4);
-            background: rgba(0,212,255,.08);
-        }
-
-        .metric-value {
-            font-family: var(--font-hud);
-            font-size: 32px;
-            font-weight: 700;
-            color: var(--c1);
-            text-shadow: var(--glow1);
-            line-height: 1;
-            margin-bottom: 6px;
-        }
-
-        .metric-value sup {
-            font-size: 14px;
-            vertical-align: super;
-        }
-
-        .metric-label {
-            font-size: 10px;
-            letter-spacing: .12em;
-            color: rgba(200,232,245,.4);
-            text-transform: uppercase;
-            font-family: var(--font-mono);
-        }
-
-        .skill-list {
-            display: flex;
-            flex-direction: column;
-            gap: 14px;
-        }
-
-        .skill-item { }
-
-        .skill-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: baseline;
-            margin-bottom: 6px;
-        }
-
-        .skill-name {
-            font-family: var(--font-mono);
-            font-size: 12px;
-            color: rgba(200,232,245,.7);
-            letter-spacing: .08em;
-        }
-
-        .skill-pct {
-            font-family: var(--font-hud);
-            font-size: 11px;
-            color: var(--c1);
-        }
-
-        .skill-track {
-            height: 4px;
-            background: rgba(0,212,255,.1);
-            border-radius: 2px;
-            overflow: hidden;
-            position: relative;
-        }
-
-        .skill-fill {
-            height: 100%;
-            border-radius: 2px;
-            background: linear-gradient(90deg, var(--c1), var(--c2));
-            box-shadow: 0 0 8px var(--c1);
-            width: 0;
-            transition: width 1.6s cubic-bezier(.22,1,.36,1);
-        }
-
-        .skill-track::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            bottom: 0;
-            width: 60px;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,.3), transparent);
-            animation: skillShine 3s ease-in-out infinite;
-            animation-delay: var(--d, 0s);
-        }
-
-        @keyframes skillShine {
-            0% { left: -60px; }
-            100% { left: 110%; }
-        }
+        .metric-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, transparent, var(--c1), transparent); animation: metricScan 3s linear infinite; animation-delay: var(--d, 0s); }
+        @keyframes metricScan { 0% { transform: translateX(-100%); opacity: 0; } 50% { opacity: 1; } 100% { transform: translateX(100%); opacity: 0; } }
+        .metric-card:hover { border-color: rgba(0,212,255,.4); background: rgba(0,212,255,.08); }
+        .metric-value { font-family: var(--font-hud); font-size: 32px; font-weight: 700; color: var(--c1); text-shadow: var(--glow1); line-height: 1; margin-bottom: 6px; }
+        .metric-value .count { text-shadow: var(--glow1); }
+        .metric-label { font-size: 10px; letter-spacing: .12em; color: rgba(200,232,245,.4); text-transform: uppercase; font-family: var(--font-mono); }
 
         .holo-card {
-            background: rgba(10,31,53,.6);
-            border: 1px solid rgba(0,212,255,.2);
-            border-radius: 12px;
-            padding: 28px 28px 24px;
-            position: relative;
-            overflow: hidden;
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
+            background: rgba(10,31,53,.6); border: 1px solid rgba(0,212,255,.2);
+            border-radius: 12px; padding: 28px 28px 24px; position: relative;
+            overflow: hidden; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
             transition: transform .3s, box-shadow .3s;
         }
-
-        .holo-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 40px rgba(0,212,255,.12);
+        .holo-card:hover { transform: translateY(-2px); box-shadow: 0 8px 40px rgba(0,212,255,.12); }
+        .holo-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(135deg, rgba(0,212,255,.06) 0%, transparent 60%); pointer-events: none; }
+        .holo-card::after { content: attr(data-id); position: absolute; top: 12px; right: 16px; font-family: var(--font-mono); font-size: 9px; color: rgba(0,212,255,.25); letter-spacing: .15em; }
+        .holo-card .holo-shimmer {
+            position: absolute; inset: 0; pointer-events: none;
+            background: linear-gradient(105deg, transparent 40%, rgba(0,212,255,.06) 45%, rgba(29,233,182,.04) 50%, transparent 55%);
+            background-size: 250% 100%; animation: holoShimmer 6s ease-in-out infinite;
         }
+        @keyframes holoShimmer { 0%,100% { background-position: 200% 0; } 50% { background-position: -50% 0; } }
 
-        .holo-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(135deg, rgba(0,212,255,.06) 0%, transparent 60%);
-            pointer-events: none;
-        }
+        .card-title { font-family: var(--font-hud); font-size: 12px; letter-spacing: .25em; color: var(--c1); margin-bottom: 14px; display: flex; align-items: center; gap: 10px; }
+        .card-title::before { content: ''; width: 20px; height: 1px; background: var(--c1); box-shadow: var(--glow1); flex-shrink: 0; }
+        .card-body { font-size: 14px; font-weight: 300; line-height: 1.8; color: rgba(200,232,245,.65); }
+        .card-body strong { color: var(--c2); font-weight: 600; }
+        .card-body em { color: rgba(200,232,245,.9); font-style: normal; font-weight: 400; }
 
-        .holo-card::after {
-            content: attr(data-id);
-            position: absolute;
-            top: 12px;
-            right: 16px;
-            font-family: var(--font-mono);
-            font-size: 9px;
-            color: rgba(0,212,255,.25);
-            letter-spacing: .15em;
-        }
+        .timeline { display: flex; flex-direction: column; gap: 0; }
+        .tl-item { display: grid; grid-template-columns: 80px 1px 1fr; gap: 0 16px; padding-bottom: 28px; }
+        .tl-year { font-family: var(--font-hud); font-size: 12px; color: var(--c1); text-align: right; padding-top: 3px; letter-spacing: .05em; }
+        .tl-line { display: flex; flex-direction: column; align-items: center; gap: 0; }
+        .tl-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--c1); box-shadow: var(--glow1); flex-shrink: 0; margin-top: 4px; }
+        .tl-track { flex: 1; width: 1px; background: linear-gradient(180deg, rgba(0,212,255,.4), transparent); margin-top: 4px; }
+        .tl-content { padding-top: 2px; }
+        .tl-title { font-family: var(--font-hud); font-size: 13px; color: #fff; margin-bottom: 5px; letter-spacing: .05em; }
+        .tl-desc { font-size: 13px; font-weight: 300; color: rgba(200,232,245,.55); line-height: 1.6; }
 
-        .card-title {
-            font-family: var(--font-hud);
-            font-size: 12px;
-            letter-spacing: .25em;
-            color: var(--c1);
-            margin-bottom: 14px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
+        #cta { text-align: center; padding: 40px 0 20px; }
+        .cta-badge { display: inline-block; font-family: var(--font-mono); font-size: 10px; letter-spacing: .3em; color: var(--c4); border: 1px solid rgba(255,107,53,.3); border-radius: 3px; padding: 5px 14px; margin-bottom: 20px; animation: badgePulse 2s ease-in-out infinite; }
+        @keyframes badgePulse { 0%,100% { box-shadow: 0 0 0 0 rgba(255,107,53,0); } 50% { box-shadow: 0 0 0 8px rgba(255,107,53,.08); } }
+        .cta-title { font-family: var(--font-hud); font-size: clamp(20px, 5vw, 32px); font-weight: 900; letter-spacing: .1em; color: #fff; margin-bottom: 12px; text-shadow: var(--glow1); }
+        .cta-sub { font-size: 14px; font-weight: 300; color: rgba(200,232,245,.55); max-width: 400px; margin: 0 auto 36px; line-height: 1.7; }
+        .cta-sub strong { color: var(--c2); font-weight: 600; }
 
-        .card-title::before {
-            content: '';
-            width: 20px;
-            height: 1px;
-            background: var(--c1);
-            box-shadow: var(--glow1);
-            flex-shrink: 0;
-        }
-
-        .card-body {
-            font-size: 14px;
-            font-weight: 300;
-            line-height: 1.8;
-            color: rgba(200,232,245,.65);
-        }
-
-        .card-body strong {
-            color: var(--c2);
-            font-weight: 600;
-        }
-
-        .card-body em {
-            color: rgba(200,232,245,.9);
-            font-style: normal;
-            font-weight: 400;
-        }
-
-        .timeline {
-            display: flex;
-            flex-direction: column;
-            gap: 0;
-        }
-
-        .tl-item {
-            display: grid;
-            grid-template-columns: 80px 1px 1fr;
-            gap: 0 16px;
-            padding-bottom: 28px;
-        }
-
-        .tl-year {
-            font-family: var(--font-hud);
-            font-size: 12px;
-            color: var(--c1);
-            text-align: right;
-            padding-top: 3px;
-            letter-spacing: .05em;
-        }
-
-        .tl-line {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 0;
-        }
-
-        .tl-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: var(--c1);
-            box-shadow: var(--glow1);
-            flex-shrink: 0;
-            margin-top: 4px;
-        }
-
-        .tl-track {
-            flex: 1;
-            width: 1px;
-            background: linear-gradient(180deg, rgba(0,212,255,.4), transparent);
-            margin-top: 4px;
-        }
-
-        .tl-content {
-            padding-top: 2px;
-        }
-
-        .tl-title {
-            font-family: var(--font-hud);
-            font-size: 13px;
-            color: #fff;
-            margin-bottom: 5px;
-            letter-spacing: .05em;
-        }
-
-        .tl-desc {
-            font-size: 13px;
-            font-weight: 300;
-            color: rgba(200,232,245,.55);
-            line-height: 1.6;
-        }
-
-        #cta {
-            text-align: center;
-            padding: 40px 0 20px;
-        }
-
-        .cta-badge {
-            display: inline-block;
-            font-family: var(--font-mono);
-            font-size: 10px;
-            letter-spacing: .3em;
-            color: var(--c4);
-            border: 1px solid rgba(255,107,53,.3);
-            border-radius: 3px;
-            padding: 5px 14px;
-            margin-bottom: 20px;
-            animation: badgePulse 2s ease-in-out infinite;
-        }
-
-        @keyframes badgePulse {
-            0%,100% { box-shadow: 0 0 0 0 rgba(255,107,53,0); }
-            50% { box-shadow: 0 0 0 8px rgba(255,107,53,.08); }
-        }
-
-        .cta-title {
-            font-family: var(--font-hud);
-            font-size: clamp(20px, 5vw, 32px);
-            font-weight: 900;
-            letter-spacing: .1em;
-            color: #fff;
-            margin-bottom: 12px;
-            text-shadow: var(--glow1);
-        }
-
-        .cta-sub {
-            font-size: 14px;
-            font-weight: 300;
-            color: rgba(200,232,245,.55);
-            max-width: 360px;
-            margin: 0 auto 36px;
-            line-height: 1.7;
-        }
-
-        .cta-sub strong {
-            color: var(--c2);
-            font-weight: 600;
-        }
-
+        /* ── Dual CTA Buttons ─────────────────────────────── */
         .btn-access {
-            position: relative;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 14px;
-            background: transparent;
-            border: 1px solid rgba(0,212,255,.4);
-            border-radius: 6px;
-            padding: 18px 44px;
-            cursor: default;
-            font-family: var(--font-hud);
-            font-size: 14px;
-            letter-spacing: .25em;
-            color: rgba(200,232,245,.5);
-            overflow: hidden;
-            transition: all .3s;
-            text-decoration: none;
+            position: relative; display: inline-flex; align-items: center; justify-content: center;
+            gap: 14px; border: 1px solid rgba(0,212,255,.4); border-radius: 6px;
+            padding: 18px 44px; font-family: var(--font-hud); font-size: 14px;
+            letter-spacing: .25em; color: rgba(200,232,245,.5); overflow: hidden;
+            transition: all .3s; text-decoration: none; background: transparent; cursor: default;
         }
+        .btn-access::before { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, transparent, rgba(0,212,255,.05), transparent); transform: translateX(-100%); animation: btnShine 3s ease-in-out infinite; }
+        @keyframes btnShine { 0%,100% { transform: translateX(-100%); } 50% { transform: translateX(100%); } }
+        .btn-access .btn-lock { width: 18px; height: 18px; opacity: .5; }
 
-        .btn-access::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(90deg, transparent, rgba(0,212,255,.05), transparent);
-            transform: translateX(-100%);
-            animation: btnShine 3s ease-in-out infinite;
+        .btn-buy {
+            position: relative; display: inline-flex; align-items: center; justify-content: center;
+            gap: 12px; background: linear-gradient(135deg, rgba(0,212,255,.15), rgba(29,233,182,.12));
+            border: 2px solid var(--c1); border-radius: 8px; padding: 20px 48px;
+            font-family: var(--font-hud); font-size: 15px; letter-spacing: .2em;
+            color: #fff; text-decoration: none; cursor: pointer; overflow: hidden;
+            transition: all .3s; text-shadow: var(--glow1);
+            box-shadow: 0 0 20px rgba(0,212,255,.2), inset 0 0 20px rgba(0,212,255,.05);
         }
-
-        @keyframes btnShine {
-            0%,100% { transform: translateX(-100%); }
-            50% { transform: translateX(100%); }
+        .btn-buy:hover {
+            background: linear-gradient(135deg, rgba(0,212,255,.25), rgba(29,233,182,.2));
+            box-shadow: 0 0 40px rgba(0,212,255,.35), inset 0 0 30px rgba(0,212,255,.1);
+            transform: translateY(-2px);
         }
+        .btn-buy::before { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, transparent, rgba(255,255,255,.08), transparent); transform: translateX(-100%); animation: btnShine 2.5s ease-in-out infinite; }
+        .btn-buy svg { width: 20px; height: 20px; flex-shrink: 0; }
 
-        .btn-access .btn-lock {
-            width: 18px;
-            height: 18px;
-            opacity: .5;
+        .btn-soon { display: block; font-size: 9px; letter-spacing: .25em; color: var(--c4); opacity: .7; margin-top: 12px; font-family: var(--font-mono); }
+
+        .cta-dual { display: flex; flex-direction: column; align-items: center; gap: 16px; margin-top: 8px; }
+
+        .social-row { display: flex; justify-content: center; gap: 16px; margin-top: 48px; padding-top: 40px; border-top: 1px solid rgba(0,212,255,.1); }
+        .social-link { display: flex; align-items: center; gap: 8px; font-family: var(--font-mono); font-size: 11px; color: rgba(200,232,245,.4); text-decoration: none; letter-spacing: .08em; transition: color .2s; }
+        .social-link:hover { color: var(--c1); }
+        .social-link svg { opacity: .6; }
+        .sys-stamp { text-align: center; margin-top: 28px; font-family: var(--font-mono); font-size: 10px; color: rgba(0,212,255,.2); letter-spacing: .15em; }
+
+        .problem-wrap {
+            position: relative; border: 1px solid rgba(0,212,255,.12); border-radius: 12px;
+            padding: 32px 28px 28px; background: rgba(0,10,22,.7); overflow: hidden; text-align: center;
         }
+        .problem-wrap::before { content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 60%; height: 1px; background: linear-gradient(90deg, transparent, var(--c1), transparent); }
+        .problem-line { font-family: var(--font-body); font-size: 15px; font-weight: 300; color: rgba(200,232,245,.55); line-height: 1.9; margin-bottom: 4px; }
+        .problem-line.emphasis { font-size: 17px; font-weight: 600; color: #fff; margin: 18px 0 6px; letter-spacing: .02em; }
+        .problem-line strong { color: var(--c1); font-weight: 600; }
+        .problem-line em { color: var(--c2); font-style: normal; font-weight: 600; }
 
-        .btn-soon {
-            display: block;
-            font-size: 9px;
-            letter-spacing: .25em;
-            color: var(--c4);
-            opacity: .7;
-            margin-top: 12px;
-            font-family: var(--font-mono);
+        .learn-list { display: flex; flex-direction: column; gap: 8px; }
+        .learn-item {
+            display: flex; align-items: flex-start; gap: 14px;
+            background: rgba(0,212,255,.04); border: 1px solid rgba(0,212,255,.12);
+            border-left: 2px solid var(--c1); border-radius: 0 6px 6px 0;
+            padding: 14px 16px; transition: background .25s, border-color .25s;
         }
+        .learn-item:hover { background: rgba(0,212,255,.09); border-color: rgba(0,212,255,.4); }
+        .learn-icon { width: 32px; height: 32px; flex-shrink: 0; border-radius: 6px; background: rgba(0,212,255,.1); display: flex; align-items: center; justify-content: center; font-size: 15px; box-shadow: 0 0 10px rgba(0,212,255,.15); }
+        .learn-text strong { display: block; font-family: var(--font-hud); font-size: 11px; letter-spacing: .1em; color: var(--c1); margin-bottom: 3px; }
+        .learn-text span { font-size: 12px; font-weight: 300; color: rgba(200,232,245,.5); line-height: 1.5; }
 
-        .radar-wrap {
-            display: flex;
-            justify-content: center;
-            margin: 8px 0 24px;
+        .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        @media(max-width:480px) { .two-col { grid-template-columns: 1fr; } }
+
+        .tag-list { display: flex; flex-wrap: wrap; gap: 8px; }
+        .tag-pill { display: flex; align-items: center; gap: 7px; background: rgba(29,233,182,.06); border: 1px solid rgba(29,233,182,.2); border-radius: 100px; padding: 7px 14px; font-size: 12px; color: rgba(200,232,245,.7); font-family: var(--font-mono); letter-spacing: .04em; }
+        .tag-pill .ti { color: var(--c2); font-size: 13px; }
+
+        .bonus-list { display: flex; flex-direction: column; gap: 8px; }
+        .bonus-item { display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 300; color: rgba(200,232,245,.65); }
+        .bonus-item::before { content: '\25B8'; color: var(--c4); font-size: 10px; flex-shrink: 0; }
+        .bonus-item strong { color: #fff; font-weight: 600; }
+
+        /* ── Comparison Table ──────────────────────────── */
+        .diff-banner {
+            position: relative; border-radius: 12px; padding: 36px 28px; text-align: center;
+            overflow: hidden; background: linear-gradient(135deg, rgba(0,212,255,.07) 0%, rgba(29,233,182,.04) 100%);
+            border: 1px solid rgba(0,212,255,.2);
         }
+        .diff-banner::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 0%, rgba(0,212,255,.12), transparent 70%); }
+        .diff-tag { font-family: var(--font-mono); font-size: 10px; letter-spacing: .3em; color: var(--c4); margin-bottom: 16px; display: block; }
+        .diff-main { font-family: var(--font-hud); font-size: clamp(18px, 4vw, 26px); font-weight: 900; letter-spacing: .06em; color: #fff; margin-bottom: 10px; text-shadow: var(--glow1); line-height: 1.3; }
+        .diff-sub { font-size: 14px; font-weight: 300; color: rgba(200,232,245,.6); line-height: 1.7; }
+        .diff-sub strong { color: var(--c2); font-weight: 600; }
+        .diff-compare { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 24px; text-align: left; }
+        @media(max-width:420px) { .diff-compare { grid-template-columns: 1fr; } }
+        .diff-col-title { font-family: var(--font-mono); font-size: 9px; letter-spacing: .2em; margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid rgba(255,255,255,.08); }
+        .diff-col-title.neg { color: rgba(255,95,121,.6); }
+        .diff-col-title.pos { color: var(--c2); }
+        .diff-row { display: flex; align-items: center; gap: 8px; font-size: 12px; color: rgba(200,232,245,.5); padding: 4px 0; font-weight: 300; }
+        .diff-row .icon { font-size: 12px; flex-shrink: 0; }
+        .code-rain { position: absolute; top: 0; right: 0; width: 100px; height: 100%; overflow: hidden; pointer-events: none; opacity: .06; z-index: 0; }
+        .code-rain span { position: absolute; font-family: var(--font-mono); font-size: 9px; color: var(--c1); white-space: nowrap; animation: codefall linear infinite; }
+        @keyframes codefall { 0% { transform: translateY(-100%); opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 100% { transform: translateY(800px); opacity: 0; } }
 
-        #radar-canvas {
-            filter: drop-shadow(0 0 12px rgba(0,212,255,.3));
-        }
+        /* ── Demo Frame ────────────────────────────────── */
+        .demo-frame { position: relative; border: 1px solid rgba(0,212,255,.2); border-radius: 10px; padding: 3px; margin: 28px 0; background: rgba(0,8,20,.7); overflow: hidden; }
+        .demo-frame::before { content: '\25C9 REC'; position: absolute; top: 10px; right: 14px; font-family: var(--font-mono); font-size: 8px; color: #ff3b5c; letter-spacing: 2px; z-index: 3; animation: recBlink 1.5s step-end infinite; }
+        @keyframes recBlink { 50% { opacity: 0; } }
+        .demo-frame::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 60%; background: linear-gradient(to top, rgba(2,11,24,.95), transparent); pointer-events: none; z-index: 2; }
+        .demo-frame canvas { width: 100%; height: 220px; display: block; border-radius: 8px; }
+        .demo-label { position: absolute; bottom: 14px; left: 16px; z-index: 3; font-family: var(--font-hud); font-size: 10px; letter-spacing: 3px; color: var(--c1); text-shadow: var(--glow1); }
+        .demo-sublabel { position: absolute; bottom: 14px; right: 16px; z-index: 3; font-family: var(--font-mono); font-size: 8px; color: rgba(0,212,255,.35); letter-spacing: 1.5px; }
 
-        .reveal {
-            opacity: 0;
-            transform: translateY(28px);
-            transition: opacity .8s ease, transform .8s cubic-bezier(.22,1,.36,1);
-        }
+        /* ── Power bars ────────────────────────────────── */
+        .power-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
+        .power-bar { background: rgba(0,212,255,.04); border: 1px solid rgba(0,212,255,.12); border-radius: 6px; padding: 12px 14px; position: relative; overflow: hidden; }
+        .power-bar::after { content: ''; position: absolute; bottom: 0; left: 0; height: 2px; background: linear-gradient(90deg, var(--c1), var(--c2)); box-shadow: 0 0 8px var(--c1); width: 0; transition: width 1.8s cubic-bezier(.22,1,.36,1); }
+        .power-bar.active::after { width: var(--pwr, 80%); }
+        .power-label { font-family: var(--font-mono); font-size: 10px; color: rgba(200,232,245,.5); letter-spacing: .06em; }
+        .power-value { font-family: var(--font-hud); font-size: 18px; color: var(--c1); text-shadow: var(--glow1); }
+        @media(max-width:480px) { .power-grid { grid-template-columns: 1fr; } }
 
-        .reveal.visible {
-            opacity: 1;
-            transform: translateY(0);
-        }
+        /* ── Ticker ────────────────────────────────────── */
+        .proof-ticker { overflow: hidden; margin: 20px 0; padding: 10px 0; border-top: 1px solid rgba(0,212,255,.08); border-bottom: 1px solid rgba(0,212,255,.08); }
+        .proof-track { display: flex; gap: 40px; animation: tickerScroll 25s linear infinite; white-space: nowrap; }
+        .proof-item { font-family: var(--font-mono); font-size: 10px; color: rgba(0,212,255,.3); letter-spacing: .1em; flex-shrink: 0; }
+        @keyframes tickerScroll { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
 
+        /* ── Terminal ──────────────────────────────────── */
+        .hero-terminal { margin-top: 24px; background: rgba(0,10,22,.85); border: 1px solid rgba(0,212,255,.18); border-radius: 8px; padding: 16px 20px; font-family: var(--font-mono); font-size: 12px; color: var(--c2); text-align: left; max-width: 440px; width: 100%; min-height: 80px; position: relative; overflow: hidden; }
+        .hero-terminal::before { content: '\25CF \25CF \25CF'; position: absolute; top: 6px; left: 12px; font-size: 6px; letter-spacing: 4px; color: rgba(0,212,255,.3); }
+        .term-prompt { color: var(--c1); }
+        .term-output { color: rgba(200,232,245,.6); }
+        .term-success { color: var(--c2); }
+        .term-cursor { display: inline-block; width: 7px; height: 13px; background: var(--c1); animation: cursor-blink .6s step-end infinite; vertical-align: text-bottom; margin-left: 2px; }
+        @keyframes termReveal { to { opacity: 1; transform: translateX(0); } }
+
+        /* ── Reveal ────────────────────────────────────── */
+        .reveal { opacity: 0; transform: translateY(28px); transition: opacity .8s ease, transform .8s cubic-bezier(.22,1,.36,1); }
+        .reveal.visible { opacity: 1; transform: translateY(0); }
         .reveal[data-delay="1"] { transition-delay: .1s; }
         .reveal[data-delay="2"] { transition-delay: .2s; }
         .reveal[data-delay="3"] { transition-delay: .3s; }
         .reveal[data-delay="4"] { transition-delay: .4s; }
 
-        .social-row {
-            display: flex;
-            justify-content: center;
-            gap: 16px;
-            margin-top: 48px;
-            padding-top: 40px;
-            border-top: 1px solid rgba(0,212,255,.1);
-        }
+        /* ── Ia HUD (audio player) ─────────────────── */
+        #ia-hud { position: fixed; bottom: 28px; right: 28px; z-index: 9998; width: 300px; background: rgba(0,7,20,.93); border: 1px solid rgba(0,212,255,.22); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); padding: 14px 18px 12px; transform: translateX(360px); transition: transform .45s cubic-bezier(.16,1,.3,1), opacity .45s; opacity: 0; pointer-events: none; }
+        #ia-hud.active { transform: translateX(0); opacity: 1; }
+        #ia-hud::before, #ia-hud::after { content: ''; position: absolute; width: 12px; height: 12px; border-color: var(--c1); border-style: solid; opacity: .6; }
+        #ia-hud::before { top: -1px; left: -1px; border-width: 2px 0 0 2px; }
+        #ia-hud::after { bottom: -1px; right: -1px; border-width: 0 2px 2px 0; }
+        #jhud-inner { position: relative; }
+        #jhud-inner::before, #jhud-inner::after { content: ''; position: absolute; width: 8px; height: 8px; border-color: rgba(0,212,255,.35); border-style: solid; }
+        #jhud-inner::before { top: -1px; right: -1px; border-width: 2px 2px 0 0; }
+        #jhud-inner::after { bottom: -1px; left: -1px; border-width: 0 0 2px 2px; }
+        .jhud-scan { position: absolute; inset: 0; pointer-events: none; background: repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,212,255,.018) 3px, rgba(0,212,255,.018) 4px); }
+        .jhud-header { display: flex; align-items: center; gap: 7px; margin-bottom: 9px; font-family: var(--font-hud); font-size: 8.5px; letter-spacing: 3px; color: var(--c1); opacity: .75; }
+        .jhud-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--c1); flex-shrink: 0; animation: jhud-blink .9s ease-in-out infinite; }
+        @keyframes jhud-blink { 0%,100% { opacity: 1; box-shadow: 0 0 5px var(--c1); } 50% { opacity: .25; box-shadow: none; } }
+        .jhud-title { flex: 1; }
+        .jhud-index { font-size: 8px; color: rgba(0,212,255,.45); letter-spacing: 2px; }
+        #jhud-caption { font-family: var(--font-mono); font-size: 11.5px; color: #cdeaf8; min-height: 34px; line-height: 1.55; margin-bottom: 10px; border-left: 2px solid rgba(0,212,255,.5); padding-left: 10px; }
+        .jhud-cursor { display: inline-block; width: 5px; height: 12px; background: var(--c1); vertical-align: middle; margin-left: 2px; animation: cursor-blink .55s step-end infinite; }
+        @keyframes cursor-blink { 0%,100% { opacity:1 } 50% { opacity:0 } }
+        #jhud-canvas { width: 100% !important; height: 36px !important; display: block; }
+        .jhud-footer { display: flex; justify-content: space-between; margin-top: 7px; font-family: var(--font-hud); font-size: 7.5px; letter-spacing: 2px; color: rgba(0,212,255,.38); }
+        .j-flash { position: fixed; inset: 0; pointer-events: none; z-index: 9989; background: radial-gradient(ellipse at 85% 85%, rgba(0,212,255,.07) 0%, transparent 55%); opacity: 0; animation: j-flash .9s forwards; }
+        @keyframes j-flash { 0% { opacity: 0; } 15% { opacity: 1; } 75% { opacity: 1; } 100% { opacity: 0; } }
 
-        .social-link {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-family: var(--font-mono);
-            font-size: 11px;
-            color: rgba(200,232,245,.4);
-            text-decoration: none;
-            letter-spacing: .08em;
-            transition: color .2s;
-        }
-
-        .social-link:hover {
-            color: var(--c1);
-        }
-
-        .social-link svg {
-            opacity: .6;
-        }
-
-        .sys-stamp {
-            text-align: center;
-            margin-top: 28px;
-            font-family: var(--font-mono);
-            font-size: 10px;
-            color: rgba(0,212,255,.2);
-            letter-spacing: .15em;
-        }
-
-        .problem-wrap {
-            position: relative;
-            border: 1px solid rgba(0,212,255,.12);
-            border-radius: 12px;
-            padding: 32px 28px 28px;
-            background: rgba(0,10,22,.7);
-            overflow: hidden;
-            text-align: center;
-        }
-
-        .problem-wrap::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 60%;
-            height: 1px;
-            background: linear-gradient(90deg, transparent, var(--c1), transparent);
-        }
-
-        .problem-line {
-            font-family: var(--font-body);
-            font-size: 15px;
-            font-weight: 300;
-            color: rgba(200,232,245,.55);
-            line-height: 1.9;
-            margin-bottom: 4px;
-        }
-
-        .problem-line.emphasis {
-            font-size: 17px;
-            font-weight: 600;
-            color: #fff;
-            margin: 18px 0 6px;
-            letter-spacing: .02em;
-        }
-
-        .problem-line strong {
-            color: var(--c1);
-            font-weight: 600;
-        }
-
-        .problem-line em {
-            color: var(--c2);
-            font-style: normal;
-            font-weight: 600;
-        }
-
-        .learn-list {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .learn-item {
-            display: flex;
-            align-items: flex-start;
-            gap: 14px;
-            background: rgba(0,212,255,.04);
-            border: 1px solid rgba(0,212,255,.12);
-            border-left: 2px solid var(--c1);
-            border-radius: 0 6px 6px 0;
-            padding: 14px 16px;
-            transition: background .25s, border-color .25s;
-        }
-
-        .learn-item:hover {
-            background: rgba(0,212,255,.09);
-            border-color: rgba(0,212,255,.4);
-        }
-
-        .learn-icon {
-            width: 32px;
-            height: 32px;
-            flex-shrink: 0;
-            border-radius: 6px;
-            background: rgba(0,212,255,.1);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 15px;
-            box-shadow: 0 0 10px rgba(0,212,255,.15);
-        }
-
-        .learn-text strong {
-            display: block;
-            font-family: var(--font-hud);
-            font-size: 11px;
-            letter-spacing: .1em;
-            color: var(--c1);
-            margin-bottom: 3px;
-        }
-
-        .learn-text span {
-            font-size: 12px;
-            font-weight: 300;
-            color: rgba(200,232,245,.5);
-            line-height: 1.5;
-        }
-
-        .two-col {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-        }
-
-        @media(max-width:480px) {
-            .two-col { grid-template-columns: 1fr; }
-        }
-
-        .tag-list {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-        }
-
-        .tag-pill {
-            display: flex;
-            align-items: center;
-            gap: 7px;
-            background: rgba(29,233,182,.06);
-            border: 1px solid rgba(29,233,182,.2);
-            border-radius: 100px;
-            padding: 7px 14px;
-            font-size: 12px;
-            color: rgba(200,232,245,.7);
-            font-family: var(--font-mono);
-            letter-spacing: .04em;
-        }
-
-        .tag-pill .ti {
-            color: var(--c2);
-            font-size: 13px;
-        }
-
-        .bonus-list {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .bonus-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 13px;
-            font-weight: 300;
-            color: rgba(200,232,245,.65);
-        }
-
-        .bonus-item::before {
-            content: '\25B8';
-            color: var(--c4);
-            font-size: 10px;
-            flex-shrink: 0;
-        }
-
-        .bonus-item strong {
-            color: #fff;
-            font-weight: 600;
-        }
-
-        .diff-banner {
-            position: relative;
-            border-radius: 12px;
-            padding: 36px 28px;
-            text-align: center;
-            overflow: hidden;
-            background: linear-gradient(135deg, rgba(0,212,255,.07) 0%, rgba(29,233,182,.04) 100%);
-            border: 1px solid rgba(0,212,255,.2);
-        }
-
-        .diff-banner::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: radial-gradient(ellipse at 50% 0%, rgba(0,212,255,.12), transparent 70%);
-        }
-
-        .diff-tag {
-            font-family: var(--font-mono);
-            font-size: 10px;
-            letter-spacing: .3em;
-            color: var(--c4);
-            margin-bottom: 16px;
-            display: block;
-        }
-
-        .diff-main {
-            font-family: var(--font-hud);
-            font-size: clamp(18px, 4vw, 26px);
-            font-weight: 900;
-            letter-spacing: .06em;
-            color: #fff;
-            margin-bottom: 10px;
-            text-shadow: var(--glow1);
-            line-height: 1.3;
-        }
-
-        .diff-sub {
-            font-size: 14px;
-            font-weight: 300;
-            color: rgba(200,232,245,.6);
-            line-height: 1.7;
-        }
-
-        .diff-sub strong {
-            color: var(--c2);
-            font-weight: 600;
-        }
-
-        .diff-compare {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            margin-top: 24px;
-            text-align: left;
-        }
-
-        @media(max-width:420px) {
-            .diff-compare { grid-template-columns: 1fr; }
-        }
-
-        .diff-col { }
-
-        .diff-col-title {
-            font-family: var(--font-mono);
-            font-size: 9px;
-            letter-spacing: .2em;
-            margin-bottom: 10px;
-            padding-bottom: 6px;
-            border-bottom: 1px solid rgba(255,255,255,.08);
-        }
-
-        .diff-col-title.neg {
-            color: rgba(255,95,121,.6);
-        }
-
-        .diff-col-title.pos {
-            color: var(--c2);
-        }
-
-        .diff-row {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 12px;
-            color: rgba(200,232,245,.5);
-            padding: 4px 0;
-            font-weight: 300;
-        }
-
-        .diff-row .icon {
-            font-size: 12px;
-            flex-shrink: 0;
-        }
-
-        @media (max-width: 480px) {
-            .metrics-grid {
-                grid-template-columns: repeat(3,1fr);
-                gap: 8px;
-            }
-            .metric-value {
-                font-size: 24px;
-            }
-            .hud-corner {
-                width: 42px;
-                height: 42px;
-            }
-            .tl-item {
-                grid-template-columns: 60px 1px 1fr;
-            }
-        }
-
+        /* ── Audio unlock ──────────────────────────────── */
         #audio-unlock {
-            position: fixed;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 9999;
-            background: rgba(0,8,22,0.92);
-            border: 1px solid rgba(0,212,255,.35);
-            color: var(--c1);
-            font-family: var(--font-hud);
-            font-size: 9px;
-            letter-spacing: 3.5px;
-            padding: 14px 32px;
-            cursor: pointer;
-            transition: opacity .5s, transform .5s, color .3s, border-color .3s;
-            white-space: nowrap;
-            outline: none;
-            -webkit-tap-highlight-color: transparent;
-            touch-action: manipulation;
-            -webkit-appearance: none;
-            user-select: none;
-            animation: unlock-pulse 2.4s ease-in-out infinite;
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
+            position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 9999;
+            background: rgba(0,8,22,0.92); border: 1px solid rgba(0,212,255,.35); color: var(--c1);
+            font-family: var(--font-hud); font-size: 9px; letter-spacing: 3.5px; padding: 14px 32px;
+            cursor: pointer; transition: opacity .5s, transform .5s, color .3s, border-color .3s;
+            white-space: nowrap; outline: none; -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation; -webkit-appearance: none; user-select: none;
+            animation: unlock-pulse 2.4s ease-in-out infinite; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
         }
+        #audio-unlock::before, #audio-unlock::after { content: ''; position: absolute; width: 9px; height: 9px; border-color: var(--c1); border-style: solid; opacity: .7; }
+        #audio-unlock::before { top: -1px; left: -1px; border-width: 2px 0 0 2px; }
+        #audio-unlock::after { bottom: -1px; right: -1px; border-width: 0 2px 2px 0; }
+        #audio-unlock:hover { background: rgba(0,212,255,.08); }
+        #audio-unlock.hidden { opacity: 0; transform: translateX(-50%) translateY(-20px); pointer-events: none; }
+        @keyframes unlock-pulse { 0%,100% { box-shadow: 0 0 8px rgba(0,212,255,.3); } 50% { box-shadow: 0 0 22px rgba(0,212,255,.65), 0 0 44px rgba(0,212,255,.2); } }
 
-        #audio-unlock::before,
-        #audio-unlock::after {
-            content: '';
-            position: absolute;
-            width: 9px;
-            height: 9px;
-            border-color: var(--c1);
-            border-style: solid;
-            opacity: .7;
+        /* ── Pricing Card ─────────────────────────────── */
+        .price-card {
+            position: relative; border: 2px solid rgba(0,212,255,.3); border-radius: 16px;
+            padding: 40px 32px; text-align: center; background: rgba(0,12,30,.8);
+            overflow: hidden; margin: 32px 0;
         }
+        .price-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--c1), var(--c2), var(--c1)); }
+        .price-tag-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: .3em; color: var(--c4); margin-bottom: 8px; }
+        .price-value { font-family: var(--font-hud); font-size: 48px; font-weight: 900; color: #fff; text-shadow: var(--glow1); margin-bottom: 4px; }
+        .price-value .currency { font-size: 22px; vertical-align: super; color: var(--c1); }
+        .price-value .cents { font-size: 22px; vertical-align: super; }
+        .price-note { font-family: var(--font-mono); font-size: 11px; color: rgba(200,232,245,.4); letter-spacing: .1em; margin-bottom: 24px; }
+        .price-features { text-align: left; margin: 0 auto 28px; max-width: 340px; }
+        .price-feat { display: flex; align-items: center; gap: 10px; padding: 6px 0; font-size: 13px; color: rgba(200,232,245,.65); font-weight: 300; border-bottom: 1px solid rgba(0,212,255,.06); }
+        .price-feat .check { color: var(--c2); font-weight: 700; flex-shrink: 0; }
 
-        #audio-unlock::before {
-            top: -1px;
-            left: -1px;
-            border-width: 2px 0 0 2px;
+        /* ── Evolution / Potential section ─────────────── */
+        .evo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .evo-item {
+            background: rgba(0,212,255,.03); border: 1px solid rgba(0,212,255,.1);
+            border-radius: 8px; padding: 16px; text-align: center;
+            transition: border-color .3s, background .3s;
         }
+        .evo-item:hover { border-color: rgba(0,212,255,.35); background: rgba(0,212,255,.07); }
+        .evo-icon { font-size: 22px; margin-bottom: 8px; }
+        .evo-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: .1em; color: rgba(200,232,245,.55); }
+        @media(max-width:420px) { .evo-grid { grid-template-columns: 1fr; } }
 
-        #audio-unlock::after {
-            bottom: -1px;
-            right: -1px;
-            border-width: 0 2px 2px 0;
-        }
-
-        #audio-unlock:hover {
-            background: rgba(0,212,255,.08);
-        }
-
-        #audio-unlock.hidden {
-            opacity: 0;
-            transform: translateX(-50%) translateY(-20px);
-            pointer-events: none;
-        }
-
-        @keyframes unlock-pulse {
-            0%,100% { box-shadow: 0 0 8px rgba(0,212,255,.3); }
-            50% { box-shadow: 0 0 22px rgba(0,212,255,.65), 0 0 44px rgba(0,212,255,.2); }
-        }
-
-        #nexus-hud {
-            position: fixed;
-            bottom: 28px;
-            right: 28px;
-            z-index: 9998;
-            width: 300px;
-            background: rgba(0,7,20,.93);
-            border: 1px solid rgba(0,212,255,.22);
-            backdrop-filter: blur(18px);
-            -webkit-backdrop-filter: blur(18px);
-            padding: 14px 18px 12px;
-            transform: translateX(360px);
-            transition: transform .45s cubic-bezier(.16,1,.3,1), opacity .45s;
-            opacity: 0;
-            pointer-events: none;
-        }
-
-        #nexus-hud.active {
-            transform: translateX(0);
-            opacity: 1;
-        }
-
-        #nexus-hud::before,
-        #nexus-hud::after {
-            content: '';
-            position: absolute;
-            width: 12px;
-            height: 12px;
-            border-color: var(--c1);
-            border-style: solid;
-            opacity: .6;
-        }
-
-        #nexus-hud::before {
-            top: -1px;
-            left: -1px;
-            border-width: 2px 0 0 2px;
-        }
-
-        #nexus-hud::after {
-            bottom: -1px;
-            right: -1px;
-            border-width: 0 2px 2px 0;
-        }
-
-        #jhud-inner::before,
-        #jhud-inner::after {
-            content: '';
-            position: absolute;
-            width: 8px;
-            height: 8px;
-            border-color: rgba(0,212,255,.35);
-            border-style: solid;
-        }
-
-        #jhud-inner::before {
-            top: -1px;
-            right: -1px;
-            border-width: 2px 2px 0 0;
-        }
-
-        #jhud-inner::after {
-            bottom: -1px;
-            left: -1px;
-            border-width: 0 0 2px 2px;
-        }
-
-        #jhud-inner {
-            position: relative;
-        }
-
-        .jhud-scan {
-            position: absolute;
-            inset: 0;
-            pointer-events: none;
-            background: repeating-linear-gradient(
-                0deg,
-                transparent,
-                transparent 3px,
-                rgba(0,212,255,.018) 3px,
-                rgba(0,212,255,.018) 4px
-            );
-        }
-
-        .jhud-header {
-            display: flex;
-            align-items: center;
-            gap: 7px;
-            margin-bottom: 9px;
-            font-family: var(--font-hud);
-            font-size: 8.5px;
-            letter-spacing: 3px;
-            color: var(--c1);
-            opacity: .75;
-        }
-
-        .jhud-dot {
-            width: 5px;
-            height: 5px;
-            border-radius: 50%;
-            background: var(--c1);
-            flex-shrink: 0;
-            animation: jhud-blink .9s ease-in-out infinite;
-        }
-
-        @keyframes jhud-blink {
-            0%,100% { opacity: 1; box-shadow: 0 0 5px var(--c1); }
-            50% { opacity: .25; box-shadow: none; }
-        }
-
-        .jhud-title {
-            flex: 1;
-        }
-
-        .jhud-index {
-            font-size: 8px;
-            color: rgba(0,212,255,.45);
-            letter-spacing: 2px;
-        }
-
-        #jhud-caption {
-            font-family: var(--font-mono);
-            font-size: 11.5px;
-            color: #cdeaf8;
-            min-height: 34px;
-            line-height: 1.55;
-            margin-bottom: 10px;
-            border-left: 2px solid rgba(0,212,255,.5);
-            padding-left: 10px;
-        }
-
-        .jhud-cursor {
-            display: inline-block;
-            width: 5px;
-            height: 12px;
-            background: var(--c1);
-            vertical-align: middle;
-            margin-left: 2px;
-            animation: cursor-blink .55s step-end infinite;
-        }
-
-        @keyframes cursor-blink {
-            0%,100% { opacity:1 }
-            50% { opacity:0 }
-        }
-
-        #jhud-canvas {
-            width: 100% !important;
-            height: 36px !important;
-            display: block;
-        }
-
-        .jhud-footer {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 7px;
-            font-family: var(--font-hud);
-            font-size: 7.5px;
-            letter-spacing: 2px;
-            color: rgba(0,212,255,.38);
-        }
-
-        @keyframes j-flash {
-            0% { opacity: 0; }
-            15% { opacity: 1; }
-            75% { opacity: 1; }
-            100% { opacity: 0; }
-        }
-
-        .j-flash {
-            position: fixed;
-            inset: 0;
-            pointer-events: none;
-            z-index: 9989;
-            background: radial-gradient(ellipse at 85% 85%, rgba(0,212,255,.07) 0%, transparent 55%);
-            opacity: 0;
-            animation: j-flash .9s forwards;
-        }
-
+        /* ── Mobile overrides ─────────────────────────── */
         @media (max-width: 480px) {
-            #nexus-hud {
-                width: calc(100vw - 32px);
-                right: 16px;
-                bottom: 16px;
-            }
-            #audio-unlock {
-                font-size: 8px;
-                padding: 9px 20px;
-                letter-spacing: 2.5px;
-                top: 12px;
-            }
-        }
-        /* ═══════════════════════════════════════════════════════════
-           NEXUS PREMIUM EFFECTS — LEVEL UP
-           ═══════════════════════════════════════════════════════════ */
-
-        /* ── Holographic shimmer on module cards ─────────────────── */
-        .holo-card {
-            position: relative;
-            overflow: hidden;
-        }
-        .holo-card::after {
-            content: attr(data-id);
-            position: absolute;
-            top: 12px;
-            right: 16px;
-            font-family: var(--font-mono);
-            font-size: 9px;
-            color: rgba(0,212,255,.25);
-            letter-spacing: .15em;
-        }
-        .holo-card .holo-shimmer {
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(
-                105deg,
-                transparent 40%,
-                rgba(0,212,255,.06) 45%,
-                rgba(29,233,182,.04) 50%,
-                transparent 55%
-            );
-            background-size: 250% 100%;
-            animation: holoShimmer 6s ease-in-out infinite;
-            pointer-events: none;
-        }
-        @keyframes holoShimmer {
-            0%,100% { background-position: 200% 0; }
-            50% { background-position: -50% 0; }
-        }
-
-        /* ── Module number badge ─────────────────────────────────── */
-        .mod-num {
-            position: absolute;
-            top: -1px;
-            left: -1px;
-            width: 36px;
-            height: 36px;
-            background: linear-gradient(135deg, var(--c1), var(--c2));
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-family: var(--font-hud);
-            font-size: 13px;
-            font-weight: 900;
-            color: var(--c0);
-            clip-path: polygon(0 0, 100% 0, 70% 100%, 0 100%);
-            z-index: 2;
-        }
-
-        /* ── Typing terminal effect for hero ─────────────────────── */
-        .hero-terminal {
-            margin-top: 24px;
-            background: rgba(0,10,22,.85);
-            border: 1px solid rgba(0,212,255,.18);
-            border-radius: 8px;
-            padding: 16px 20px;
-            font-family: var(--font-mono);
-            font-size: 12px;
-            color: var(--c2);
-            text-align: left;
-            max-width: 440px;
-            width: 100%;
-            min-height: 80px;
-            position: relative;
-            overflow: hidden;
-        }
-        .hero-terminal::before {
-            content: '● ● ●';
-            position: absolute;
-            top: 6px;
-            left: 12px;
-            font-size: 6px;
-            letter-spacing: 4px;
-            color: rgba(0,212,255,.3);
-        }
-        .hero-terminal .term-line {
-            opacity: 0;
-            transform: translateX(-8px);
-            animation: termReveal .4s ease forwards;
-        }
-        .term-prompt { color: var(--c1); }
-        .term-output { color: rgba(200,232,245,.6); }
-        .term-success { color: var(--c2); }
-        .term-cursor {
-            display: inline-block;
-            width: 7px;
-            height: 13px;
-            background: var(--c1);
-            animation: cursor-blink .6s step-end infinite;
-            vertical-align: text-bottom;
-            margin-left: 2px;
-        }
-        @keyframes termReveal {
-            to { opacity: 1; transform: translateX(0); }
-        }
-
-        /* ── Orb data ring removed — now rendered in canvas ──── */
-
-        /* ── Pulsing border on section dividers ──────────────────── */
-        .section-divider {
-            position: relative;
-        }
-        .section-divider::before {
-            animation: divPulse 3s ease-in-out infinite;
-        }
-        @keyframes divPulse {
-            0%,100% { opacity: .3; }
-            50% { opacity: .8; }
-        }
-
-        /* ── Video demo mockup frame ─────────────────────────────── */
-        .demo-frame {
-            position: relative;
-            border: 1px solid rgba(0,212,255,.2);
-            border-radius: 10px;
-            padding: 3px;
-            margin: 28px 0;
-            background: rgba(0,8,20,.7);
-            overflow: hidden;
-        }
-        .demo-frame::before {
-            content: '◉ REC';
-            position: absolute;
-            top: 10px;
-            right: 14px;
-            font-family: var(--font-mono);
-            font-size: 8px;
-            color: #ff3b5c;
-            letter-spacing: 2px;
-            z-index: 3;
-            animation: recBlink 1.5s step-end infinite;
-        }
-        @keyframes recBlink {
-            50% { opacity: 0; }
-        }
-        .demo-frame::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 60%;
-            background: linear-gradient(to top, rgba(2,11,24,.95), transparent);
-            pointer-events: none;
-            z-index: 2;
-        }
-        .demo-frame canvas {
-            width: 100%;
-            height: 220px;
-            display: block;
-            border-radius: 8px;
-        }
-        .demo-label {
-            position: absolute;
-            bottom: 14px;
-            left: 16px;
-            z-index: 3;
-            font-family: var(--font-hud);
-            font-size: 10px;
-            letter-spacing: 3px;
-            color: var(--c1);
-            text-shadow: var(--glow1);
-        }
-        .demo-sublabel {
-            position: absolute;
-            bottom: 14px;
-            right: 16px;
-            z-index: 3;
-            font-family: var(--font-mono);
-            font-size: 8px;
-            color: rgba(0,212,255,.35);
-            letter-spacing: 1.5px;
-        }
-
-        /* ── Animated counter with glow ──────────────────────────── */
-        .metric-value .count {
-            text-shadow: var(--glow1);
-        }
-
-        /* ── Live code snippet animation ─────────────────────────── */
-        .code-rain {
-            position: absolute;
-            top: 0;
-            right: 0;
-            width: 100px;
-            height: 100%;
-            overflow: hidden;
-            pointer-events: none;
-            opacity: .06;
-            z-index: 0;
-        }
-        .code-rain span {
-            position: absolute;
-            font-family: var(--font-mono);
-            font-size: 9px;
-            color: var(--c1);
-            white-space: nowrap;
-            animation: codefall linear infinite;
-        }
-        @keyframes codefall {
-            0% { transform: translateY(-100%); opacity: 0; }
-            10% { opacity: 1; }
-            90% { opacity: 1; }
-            100% { transform: translateY(800px); opacity: 0; }
-        }
-
-        /* ── Skill power bars (replaces radar) ───────────────────── */
-        .power-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-top: 12px;
-        }
-        .power-bar {
-            background: rgba(0,212,255,.04);
-            border: 1px solid rgba(0,212,255,.12);
-            border-radius: 6px;
-            padding: 12px 14px;
-            position: relative;
-            overflow: hidden;
-        }
-        .power-bar::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            height: 2px;
-            background: linear-gradient(90deg, var(--c1), var(--c2));
-            box-shadow: 0 0 8px var(--c1);
-            width: 0;
-            transition: width 1.8s cubic-bezier(.22,1,.36,1);
-        }
-        .power-bar.active::after {
-            width: var(--pwr, 80%);
-        }
-        .power-label {
-            font-family: var(--font-mono);
-            font-size: 10px;
-            color: rgba(200,232,245,.5);
-            letter-spacing: .06em;
-        }
-        .power-value {
-            font-family: var(--font-hud);
-            font-size: 18px;
-            color: var(--c1);
-            text-shadow: var(--glow1);
-        }
-        @media(max-width:480px) {
-            .power-grid { grid-template-columns: 1fr; }
-        }
-
-        /* ── Hexagonal badge for module numbers ──────────────────── */
-        .hex-badge {
-            width: 48px;
-            height: 48px;
-            background: rgba(0,212,255,.08);
-            clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-family: var(--font-hud);
-            font-size: 16px;
-            font-weight: 900;
-            color: var(--c1);
-            text-shadow: var(--glow1);
-            flex-shrink: 0;
-            border: none;
-            position: relative;
-        }
-        .hex-badge::before {
-            content: '';
-            position: absolute;
-            inset: 1px;
-            background: var(--c0);
-            clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
-        }
-        .hex-badge span {
-            position: relative;
-            z-index: 1;
-        }
-
-        /* ── Floating social proof ticker ────────────────────────── */
-        .proof-ticker {
-            overflow: hidden;
-            margin: 20px 0;
-            padding: 10px 0;
-            border-top: 1px solid rgba(0,212,255,.08);
-            border-bottom: 1px solid rgba(0,212,255,.08);
-        }
-        .proof-track {
-            display: flex;
-            gap: 40px;
-            animation: tickerScroll 25s linear infinite;
-            white-space: nowrap;
-        }
-        .proof-item {
-            font-family: var(--font-mono);
-            font-size: 10px;
-            color: rgba(0,212,255,.3);
-            letter-spacing: .1em;
-            flex-shrink: 0;
-        }
-        @keyframes tickerScroll {
-            0% { transform: translateX(0); }
-            100% { transform: translateX(-50%); }
+            .metrics-grid { grid-template-columns: repeat(2,1fr); gap: 8px; }
+            .metric-value { font-size: 24px; }
+            .hud-corner { width: 42px; height: 42px; }
+            .tl-item { grid-template-columns: 60px 1px 1fr; }
+            #ia-hud { width: calc(100vw - 32px); right: 16px; bottom: 16px; }
+            #audio-unlock { font-size: 8px; padding: 9px 20px; letter-spacing: 2.5px; top: 12px; }
+            .price-value { font-size: 36px; }
         }
     </style>
 </head>
 <body>
-    <!-- Audio unlock — fixed no topo, acompanha scroll -->
-    
+    <button id="audio-unlock">ATIVAR SISTEMA</button>
 
-    <canvas id="bg-canvas" width="1997" height="948"></canvas>
+    <canvas id="bg-canvas"></canvas>
     <div class="scan-overlay"></div>
 
     <div class="page-wrap">
         <!-- HERO -->
         <section id="hero">
-            <div id="boot-log"><div class="boot-line">&gt; SYSTEM BOOT v2.4...</div><div class="boot-line">&gt; NEURAL CORE: ONLINE</div><div class="boot-line">&gt; IA INICIALIZADA. CONTROLE ATIVO.</div><div class="boot-line">&gt; DANILO COIMBRA // SISTEMA PRONTO</div></div>
+            <div id="boot-log">
+                <div class="boot-line">&gt; IA BOOT v2.4...</div>
+                <div class="boot-line">&gt; NEURAL CORE: ONLINE</div>
+                <div class="boot-line">&gt; 27 TOOLS LOADED. AI READY.</div>
+                <div class="boot-line">&gt; AGUARDANDO NOVO OPERADOR...</div>
+            </div>
 
             <div class="orb-wrap">
                 <canvas id="orb-canvas" width="380" height="380"></canvas>
                 <div class="orb-status">
                     <div class="orb-status-ready">R E A D Y</div>
-                    <div class="orb-status-ver">N.E.X.U.S. CORE v2.0</div>
+                    <div class="orb-status-ver">IA CORE v2.0</div>
                 </div>
                 <div class="orb-mic">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
@@ -1757,32 +444,42 @@
             </div>
 
             <h1 class="hero-name">
-                <span class="glitch" data-text="CRIE SUA PRÓPRIA IA">CRIE SUA PRÓPRIA IA</span>
+                <span class="glitch" data-text="CONSTRUA SUA PROPRIA IA">CONSTRUA SUA PROPRIA IA</span>
             </h1>
-            <div class="hero-instructor">por <span>·</span> Danilo Coimbra</div>
+            <div class="hero-instructor">por <span>&middot;</span> Danilo Coimbra</div>
 
             <div class="hero-tag">
-                IA <span>·</span> AUTOMAÇÃO <span>·</span> ASSISTENTE PESSOAL
+                VOZ <span>&middot;</span> AUTOMACAO <span>&middot;</span> CONTROLE TOTAL
             </div>
 
             <p class="hero-bio">
-                Aprenda a construir sua própria <strong>Inteligência Artificial</strong> do absoluto zero — com memória, personalidade, voz e controle total do seu PC e da sua casa.<br>
-                <strong>Com arquitetura prática, visão de segurança e liberdade para evoluir.</strong>
+                O sistema completo para criar sua <strong>Inteligencia Artificial pessoal</strong> do absoluto zero &mdash; com memoria, personalidade, voz e controle total do seu PC e da sua casa.<br>
+                <strong>Codigo-fonte pronto para usar. Curso completo em breve.</strong>
             </p>
 
-            <!-- Botão EM BREVE — hero -->
-            <a href="#" class="btn-access" style="margin-bottom:28px">
-                <svg class="btn-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-                </svg>
-                EM BREVE
-            </a>
+            <!-- Dual CTA — hero -->
+            <div class="cta-dual">
+                <a href="https://go.hotmart.com/C105392153Y?dp=1" target="_blank" class="btn-buy">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="7 10 12 15 17 10"></polyline>
+                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                    </svg>
+                    QUERO MEU ACESSO
+                </a>
+                <a href="#" class="btn-access" style="padding:12px 28px;font-size:11px;">
+                    <svg class="btn-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                    </svg>
+                    CURSO COMPLETO EM BREVE
+                </a>
+            </div>
 
-            <div class="status-row">
+            <div class="status-row" style="margin-top:28px;">
                 <div class="status-chip">
                     <span class="dot"></span>
-                    SISTEMA ONLINE
+                    CODIGO DISPONIVEL
                 </div>
                 <div class="status-chip">
                     <span class="dot amber"></span>
@@ -1790,8 +487,11 @@
                 </div>
             </div>
 
-            <!-- TERMINAL DEMO — live typing -->
-            <div class="hero-terminal" id="hero-terminal"><div class="term-prompt" style="opacity: 1; transform: translateX(0px); transition: 0.3s;">$ python server.py</div><div class="term-output" style="opacity: 1; transform: translateX(0px); transition: 0.3s;">[NEXUS] Voice Service v2 — </div></div>
+            <!-- TERMINAL DEMO -->
+            <div class="hero-terminal" id="hero-terminal">
+                <div class="term-prompt" style="opacity:1;transform:translateX(0);transition:.3s;">$ python server.py</div>
+                <div class="term-output" style="opacity:1;transform:translateX(0);transition:.3s;">[IA] Voice Service v2 &mdash; </div>
+            </div>
 
             <div class="scroll-hint">
                 <span>SCROLL</span>
@@ -1803,322 +503,423 @@
         </section>
 
         <!-- METRICS -->
-        <section id="metrics-block" class="reveal visible" data-delay="1">
+        <section id="metrics-block" class="reveal" data-delay="1">
             <div class="section-divider">DADOS DO SISTEMA</div>
-            <div class="metrics-grid" style="--d: 0s;">
+            <div class="metrics-grid" style="--d:0s;">
                 <div class="metric-card">
-                    <div class="metric-value"><span class="count" data-target="27">27</span></div>
-                    <div class="metric-label">FERRAMENTAS DE VOZ</div>
+                    <div class="metric-value"><span class="count" data-target="27">0</span></div>
+                    <div class="metric-label">FERRAMENTAS</div>
                 </div>
-                <div class="metric-card" style="--d: .15s;">
-                    <div class="metric-value"><span class="count" data-target="7">7</span></div>
-                    <div class="metric-label">MÓDULOS COMPLETOS</div>
+                <div class="metric-card" style="--d:.15s;">
+                    <div class="metric-value"><span class="count" data-target="7">0</span></div>
+                    <div class="metric-label">MODULOS</div>
                 </div>
-                <div class="metric-card" style="--d: .3s;">
-                    <div class="metric-value"><span class="count" data-target="100">100</span>%</div>
-                    <div class="metric-label">CONSTRUÍDO NA PRÁTICA</div>
+                <div class="metric-card" style="--d:.3s;">
+                    <div class="metric-value"><span class="count" data-target="58">0</span></div>
+                    <div class="metric-label">ARQUIVOS</div>
+                </div>
+                <div class="metric-card" style="--d:.45s;">
+                    <div class="metric-value"><span class="count" data-target="4">0</span></div>
+                    <div class="metric-label">INSTALADORES</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- DIAGNOSIS: O PROBLEMA -->
+        <section class="reveal" data-delay="4">
+            <div class="section-divider">DIAGNOSTICO</div>
+            <div class="problem-wrap">
+                <p class="problem-line">Voce ja imaginou ter uma IA que <strong>obedece a sua voz</strong>,</p>
+                <p class="problem-line">controla seu PC, sua casa, suas mensagens?</p>
+                <br>
+                <p class="problem-line">Uma IA que <strong>lembra de voce</strong>, fala com <em>a voz que voce escolher</em>,</p>
+                <p class="problem-line">e e <strong>100% sua</strong> &mdash; sem depender de nenhuma empresa?</p>
+                <br>
+                <p class="problem-line">ChatGPT, Alexa, Siri &mdash; nenhum deles faz isso.</p>
+                <p class="problem-line">Nenhum deles e <strong>realmente seu</strong>.</p>
+                <br>
+                <p class="problem-line emphasis">Ate agora.</p>
+                <p class="problem-line emphasis">O IA e o sistema que voce vai construir.</p>
+            </div>
+        </section>
+
+        <!-- COMPARISON TABLE -->
+        <section class="reveal" data-delay="2">
+            <div class="section-divider">ANALISE COMPARATIVA</div>
+            <div class="diff-banner">
+                <span class="diff-tag">INTELIGENCIA ARTIFICIAL</span>
+                <div class="diff-main">POR QUE O IA<br>NAO E SO "MAIS UM CHATBOT"</div>
+                <div class="diff-sub">
+                    Um assistente que <strong>pensa, lembra, fala e age</strong> &mdash; rodando no seu computador.
+                </div>
+                <div class="diff-compare">
+                    <div class="diff-col">
+                        <div class="diff-col-title neg">CHATGPT / ALEXA / SIRI</div>
+                        <div class="diff-row"><span class="icon">&#x2717;</span> Sem memoria real entre sessoes</div>
+                        <div class="diff-row"><span class="icon">&#x2717;</span> Nao controla seu PC</div>
+                        <div class="diff-row"><span class="icon">&#x2717;</span> Nao envia WhatsApp/Telegram</div>
+                        <div class="diff-row"><span class="icon">&#x2717;</span> Voz generica, sem personalidade</div>
+                        <div class="diff-row"><span class="icon">&#x2717;</span> Dados na nuvem de terceiros</div>
+                        <div class="diff-row"><span class="icon">&#x2717;</span> Voce nao tem o codigo</div>
+                    </div>
+                    <div class="diff-col">
+                        <div class="diff-col-title pos">IA SYSTEM</div>
+                        <div class="diff-row"><span class="icon">&#x2713;</span> Memoria persistente (lembra pra sempre)</div>
+                        <div class="diff-row"><span class="icon">&#x2713;</span> 27 ferramentas de controle do PC</div>
+                        <div class="diff-row"><span class="icon">&#x2713;</span> WhatsApp + Telegram integrados</div>
+                        <div class="diff-row"><span class="icon">&#x2713;</span> Vozes clonadas + personalidade propria</div>
+                        <div class="diff-row"><span class="icon">&#x2713;</span> Tudo local, no seu computador</div>
+                        <div class="diff-row"><span class="icon">&#x2713;</span> Codigo-fonte 100% seu</div>
+                    </div>
                 </div>
             </div>
         </section>
 
         <!-- MODULES -->
-        <section id="trigger-modulos" class="reveal visible" data-delay="3">
-            <div class="section-divider">MÓDULOS ATIVOS</div>
+        <section id="trigger-modulos" class="reveal" data-delay="3">
+            <div class="section-divider">MODULOS DO SISTEMA</div>
 
-            <div class="holo-card" data-id="M-01">
-                <div class="card-title">MÓDULO 1 — A FUNDAÇÃO</div>
+            <div class="holo-card" data-id="M-01" style="margin-bottom:12px;">
+                <div class="card-title">MODULO 1 &mdash; A FUNDACAO</div>
                 <div class="card-body">
-                    De um PC recém-formatado a uma IA respondendo. Instale Python, Node.js, configure a API e faça sua <strong>primeira conversa com a IA pelo prompt</strong>.
+                    De um PC recem-formatado a uma IA respondendo. Python, Node.js, API configurada &mdash; sua <strong>primeira conversa com a IA pelo prompt</strong> em minutos.
                 </div>
-            <div class="holo-shimmer"></div><div class="holo-shimmer"></div></div>
+            </div>
 
-            <div class="holo-card" data-id="M-02">
-                <div class="card-title">MÓDULO 2 — CONSCIÊNCIA</div>
+            <div class="holo-card" data-id="M-02" style="margin-bottom:12px;">
+                <div class="card-title">MODULO 2 &mdash; CONSCIENCIA</div>
                 <div class="card-body">
-                    Dê personalidade, memória persistente e consciência contextual à sua IA. Ela <strong>lembra de você para sempre</strong> e sabe o que está acontecendo no seu PC.
+                    Personalidade, memoria persistente e consciencia contextual. A IA <strong>lembra de voce para sempre</strong> e sabe o que esta acontecendo no seu PC.
                 </div>
-            <div class="holo-shimmer"></div><div class="holo-shimmer"></div></div>
+            </div>
 
-            <div class="holo-card" data-id="M-03">
-                <div class="card-title">MÓDULO 3 — A INTERFACE</div>
+            <div class="holo-card" data-id="M-03" style="margin-bottom:12px;">
+                <div class="card-title">MODULO 3 &mdash; A INTERFACE</div>
                 <div class="card-body">
-                    Construa o painel holográfico de controle com visual futurista. <strong>Partículas, hex grid, visualização cerebral</strong> e converse com a IA por aplicativo próprio.
+                    Painel holografico com visual futurista. <strong>Particulas, hex grid, visualizacao cerebral</strong>, chat integrado e aplicativo desktop proprio.
                 </div>
-            <div class="holo-shimmer"></div><div class="holo-shimmer"></div></div>
+            </div>
 
-            <div class="holo-card" data-id="M-04">
-                <div class="card-title">MÓDULO 4 — CONTROLE TOTAL</div>
+            <div class="holo-card" data-id="M-04" style="margin-bottom:12px;">
+                <div class="card-title">MODULO 4 &mdash; CONTROLE TOTAL</div>
                 <div class="card-body">
-                    27 ferramentas de voz para dominar o Windows. <strong>Spotify, browser, arquivos, screenshot, análise de tela</strong> — seu PC obedece a IA.
+                    27 ferramentas de voz: <strong>Spotify, browser, arquivos, screenshot, analise de tela, volume, clipboard</strong> &mdash; seu PC obedece por voz.
                 </div>
-            <div class="holo-shimmer"></div><div class="holo-shimmer"></div></div>
+            </div>
 
-            <div class="holo-card" data-id="M-05">
-                <div class="card-title">MÓDULO 5 — COMUNICAÇÃO INTEGRADA</div>
+            <div class="holo-card" data-id="M-05" style="margin-bottom:12px;">
+                <div class="card-title">MODULO 5 &mdash; COMUNICACAO INTEGRADA</div>
                 <div class="card-body">
-                    Integre <strong>Telegram e WhatsApp</strong> pessoal à sua IA. Envie e receba mensagens, fotos e documentos com confirmação visual holográfica.
+                    <strong>Telegram e WhatsApp</strong> pessoal conectados a IA. Envie e receba mensagens, fotos e documentos &mdash; com confirmacao visual holografica.
                 </div>
-            <div class="holo-shimmer"></div><div class="holo-shimmer"></div></div>
+            </div>
 
-            <div class="holo-card" data-id="M-06">
-                <div class="card-title">MÓDULO 6 — CASA INTELIGENTE</div>
+            <div class="holo-card" data-id="M-06" style="margin-bottom:12px;">
+                <div class="card-title">MODULO 6 &mdash; CASA INTELIGENTE</div>
                 <div class="card-body">
-                    Conecte sua IA ao Home Assistant. <strong>"Acende a luz do quarto"</strong>, controle a TV, monitore sensores — tudo por voz.
+                    Home Assistant integrado. <strong>"Acende a luz do quarto"</strong>, controle a TV, monitore sensores &mdash; tudo por voz, integrado ao sistema.
                 </div>
-            <div class="holo-shimmer"></div><div class="holo-shimmer"></div></div>
+            </div>
 
             <div class="holo-card" data-id="M-07">
-                <div class="card-title">MÓDULO 7 — VOZES ÚNICAS (BÔNUS)</div>
+                <div class="card-title">MODULO 7 &mdash; VOZES E OVERLAY</div>
                 <div class="card-body">
-                    Clonagem de voz e personalidades temáticas. <strong>Altere a voz e personalidade da IA em apenas um click.</strong> Overlay holográfico e automações agendadas.
+                    Sintese de voz avancada, <strong>overlay holografico 3D</strong> e automacoes agendadas. A camada final que da vida ao sistema.
                 </div>
-            <div class="holo-shimmer"></div><div class="holo-shimmer"></div></div>
+            </div>
         </section>
 
-        <!-- DEMO FRAME — live system preview -->
-        <section class="reveal visible" data-delay="2">
+        <!-- DEMO FRAME -->
+        <section class="reveal" data-delay="2">
             <div class="section-divider">PREVIEW DO SISTEMA</div>
             <div class="demo-frame">
                 <canvas id="demo-canvas" width="640" height="220"></canvas>
-                <div class="demo-label">N.E.X.U.S. CONTROL MATRIX</div>
+                <div class="demo-label">IA CONTROL MATRIX</div>
                 <div class="demo-sublabel">LIVE PREVIEW // 20 FPS</div>
             </div>
 
-            <!-- Power grid — system capabilities -->
             <div class="power-grid" id="power-grid">
-                <div class="power-bar active" style="--pwr:97%"><div class="power-label">CONTROLE DO PC</div><div class="power-value">97%</div></div>
-                <div class="power-bar active" style="--pwr:95%"><div class="power-label">RECONHECIMENTO DE VOZ</div><div class="power-value">95%</div></div>
-                <div class="power-bar active" style="--pwr:98%"><div class="power-label">MEMÓRIA PERSISTENTE</div><div class="power-value">98%</div></div>
-                <div class="power-bar active" style="--pwr:92%"><div class="power-label">AUTOMAÇÃO RESIDENCIAL</div><div class="power-value">92%</div></div>
-                <div class="power-bar active" style="--pwr:90%"><div class="power-label">INTEGRAÇÃO WHATSAPP</div><div class="power-value">90%</div></div>
-                <div class="power-bar active" style="--pwr:94%"><div class="power-label">SÍNTESE DE VOZ</div><div class="power-value">94%</div></div>
+                <div class="power-bar" style="--pwr:97%"><div class="power-label">CONTROLE DO PC</div><div class="power-value">97%</div></div>
+                <div class="power-bar" style="--pwr:95%"><div class="power-label">RECONHECIMENTO DE VOZ</div><div class="power-value">95%</div></div>
+                <div class="power-bar" style="--pwr:98%"><div class="power-label">MEMORIA PERSISTENTE</div><div class="power-value">98%</div></div>
+                <div class="power-bar" style="--pwr:92%"><div class="power-label">AUTOMACAO RESIDENCIAL</div><div class="power-value">92%</div></div>
+                <div class="power-bar" style="--pwr:90%"><div class="power-label">INTEGRACAO WHATSAPP</div><div class="power-value">90%</div></div>
+                <div class="power-bar" style="--pwr:94%"><div class="power-label">SINTESE DE VOZ</div><div class="power-value">94%</div></div>
             </div>
         </section>
 
-        <!-- Social proof ticker -->
+        <!-- TICKER -->
         <div class="proof-ticker">
             <div class="proof-track">
-                <span class="proof-item">◈ 27 FERRAMENTAS</span>
-                <span class="proof-item">◈ 7 MÓDULOS</span>
-                <span class="proof-item">◈ 58 ARQUIVOS</span>
-                <span class="proof-item">◈ 100% PRÁTICO</span>
-                <span class="proof-item">◈ WINDOWS 10/11</span>
-                <span class="proof-item">◈ CÓDIGO ABERTO</span>
-                <span class="proof-item">◈ 8 VOZES</span>
-                <span class="proof-item">◈ CONTROLE TOTAL</span>
-                <span class="proof-item">◈ 27 FERRAMENTAS</span>
-                <span class="proof-item">◈ 7 MÓDULOS</span>
-                <span class="proof-item">◈ 58 ARQUIVOS</span>
-                <span class="proof-item">◈ 100% PRÁTICO</span>
-                <span class="proof-item">◈ WINDOWS 10/11</span>
-                <span class="proof-item">◈ CÓDIGO ABERTO</span>
-                <span class="proof-item">◈ 8 VOZES</span>
-                <span class="proof-item">◈ CONTROLE TOTAL</span>
+                <span class="proof-item">&#9670; 27 FERRAMENTAS</span>
+                <span class="proof-item">&#9670; 7 MODULOS</span>
+                <span class="proof-item">&#9670; 58 ARQUIVOS</span>
+                <span class="proof-item">&#9670; 4 INSTALADORES</span>
+                <span class="proof-item">&#9670; WINDOWS 10/11</span>
+                <span class="proof-item">&#9670; CODIGO ABERTO</span>
+                <span class="proof-item">&#9670; VOZES CLONADAS</span>
+                <span class="proof-item">&#9670; CONTROLE TOTAL</span>
+                <span class="proof-item">&#9670; 27 FERRAMENTAS</span>
+                <span class="proof-item">&#9670; 7 MODULOS</span>
+                <span class="proof-item">&#9670; 58 ARQUIVOS</span>
+                <span class="proof-item">&#9670; 4 INSTALADORES</span>
+                <span class="proof-item">&#9670; WINDOWS 10/11</span>
+                <span class="proof-item">&#9670; CODIGO ABERTO</span>
+                <span class="proof-item">&#9670; VOZES CLONADAS</span>
+                <span class="proof-item">&#9670; CONTROLE TOTAL</span>
             </div>
         </div>
 
-        <!-- DIAGNOSIS SECTION -->
-        <section class="reveal visible" data-delay="4">
-            <div class="section-divider">DIAGNÓSTICO</div>
-
-            <div class="problem-wrap">
-                <p class="problem-line">Você já imaginou controlar tudo com a voz?</p>
-                <p class="problem-line">PC, casa, músicas, mensagens, arquivos…</p>
-                <br>
-                <p class="problem-line">E se a IA <strong>lembrasse de você</strong>, falasse com <em>a voz que você escolher</em>,</p>
-                <p class="problem-line">e fosse <strong>100% sua</strong>, rodando no seu computador?</p>
-                <br>
-                <p class="problem-line emphasis">Isso não é ficção. É o que você vai construir.</p>
-                <p class="problem-line emphasis">Módulo por módulo. Do zero ao sistema completo.</p>
-            </div>
-        </section>
-
-        <!-- MODULES AGAIN (what you'll learn) -->
-        <section class="reveal visible" data-delay="1">
-            <div class="section-divider">MÓDULOS DO SISTEMA</div>
+        <!-- O QUE VOCE LEVA -->
+        <section class="reveal" data-delay="1">
+            <div class="section-divider">O QUE VOCE LEVA</div>
 
             <div class="learn-list">
                 <div class="learn-item">
-                    <div class="learn-icon">⚡</div>
+                    <div class="learn-icon">&#9889;</div>
                     <div class="learn-text">
-                        <strong>FUNDAÇÃO + API CONFIGURADA</strong>
-                        <span>Python, Node.js, servidor IA rodando e respondendo em minutos.</span>
+                        <strong>SERVIDOR DE IA COMPLETO</strong>
+                        <span>FastAPI + GPT + Whisper STT + Edge TTS. Roda local no seu PC.</span>
                     </div>
                 </div>
-
                 <div class="learn-item">
-                    <div class="learn-icon">🧠</div>
+                    <div class="learn-icon">&#129504;</div>
                     <div class="learn-text">
-                        <strong>MEMÓRIA + PERSONALIDADE</strong>
-                        <span>SOUL, MEMORY e contexto que dão identidade real à sua IA.</span>
+                        <strong>MEMORIA + PERSONALIDADE</strong>
+                        <span>Sistema SOUL + MEMORY que da identidade real a IA. Ela lembra de tudo.</span>
                     </div>
                 </div>
-
                 <div class="learn-item">
-                    <div class="learn-icon">🖥️</div>
+                    <div class="learn-icon">&#128421;</div>
                     <div class="learn-text">
-                        <strong>INTERFACE HOLOGRÁFICA</strong>
-                        <span>Dashboard futurista com partículas, scan lines e visualização cerebral.</span>
+                        <strong>INTERFACE HOLOGRAFICA DESKTOP</strong>
+                        <span>App Electron com particulas, hex grid, visualizacao cerebral e chat.</span>
                     </div>
                 </div>
-
                 <div class="learn-item">
-                    <div class="learn-icon">🎮</div>
+                    <div class="learn-icon">&#127918;</div>
                     <div class="learn-text">
                         <strong>27 FERRAMENTAS DE VOZ</strong>
-                        <span>Spotify, browser, arquivos, apps, volume, clipboard — controle total.</span>
+                        <span>Spotify, browser, arquivos, apps, volume, clipboard, screenshot, analise de tela.</span>
                     </div>
                 </div>
-
                 <div class="learn-item">
-                    <div class="learn-icon">💬</div>
+                    <div class="learn-icon">&#128172;</div>
                     <div class="learn-text">
-                        <strong>TELEGRAM + WHATSAPP</strong>
-                        <span>Sua IA acessível pelo celular, com confirmação visual antes de enviar.</span>
+                        <strong>WHATSAPP + TELEGRAM</strong>
+                        <span>Sua IA acessivel pelo celular. Envia e recebe mensagens, fotos e documentos.</span>
                     </div>
                 </div>
-
                 <div class="learn-item">
-                    <div class="learn-icon">🏠</div>
+                    <div class="learn-icon">&#127968;</div>
                     <div class="learn-text">
                         <strong>CASA INTELIGENTE</strong>
-                        <span>Home Assistant integrado — luzes, TV, sensores por comando de voz.</span>
+                        <span>Home Assistant integrado &mdash; luzes, TV, sensores, tudo por comando de voz.</span>
                     </div>
                 </div>
-
                 <div class="learn-item">
-                    <div class="learn-icon">🎙️</div>
+                    <div class="learn-icon">&#127908;</div>
                     <div class="learn-text">
-                        <strong>VOZES CLONADAS + PERSONALIDADES</strong>
-                        <span>Altere a voz e personalidade da IA em um click. Overlay holográfico 3D.</span>
+                        <strong>VOZES + OVERLAY 3D</strong>
+                        <span>Sintese de voz avancada, overlay holografico e automacoes agendadas.</span>
+                    </div>
+                </div>
+                <div class="learn-item">
+                    <div class="learn-icon">&#128230;</div>
+                    <div class="learn-text">
+                        <strong>4 INSTALADORES AUTOMATICOS</strong>
+                        <span>Setup completo, requisitos, Spotify e bonus &mdash; tudo com um clique.</span>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- ACCESS & BONUS -->
-        <section id="trigger-acesso" class="reveal visible" data-delay="2">
-            <div class="section-divider">ACESSO &amp; BÔNUS</div>
+        <!-- POTENCIAL DE EVOLUCAO -->
+        <section class="reveal" data-delay="3">
+            <div class="section-divider">POTENCIAL DE EVOLUCAO</div>
+
+            <div class="problem-wrap" style="text-align:center;margin-bottom:20px;">
+                <p class="problem-line">O IA nao e um programa fechado.</p>
+                <p class="problem-line">E uma <strong>base arquitetural</strong> pronta para evoluir.</p>
+                <br>
+                <p class="problem-line emphasis">O que voce pode construir a partir dele:</p>
+            </div>
+
+            <div class="evo-grid">
+                <div class="evo-item">
+                    <div class="evo-icon">&#129302;</div>
+                    <div class="evo-label">ATENDENTE IA</div>
+                </div>
+                <div class="evo-item">
+                    <div class="evo-icon">&#128200;</div>
+                    <div class="evo-label">ANALISTA DE DADOS</div>
+                </div>
+                <div class="evo-item">
+                    <div class="evo-icon">&#128187;</div>
+                    <div class="evo-label">DEV ASSISTANT</div>
+                </div>
+                <div class="evo-item">
+                    <div class="evo-icon">&#127973;</div>
+                    <div class="evo-label">AUTOMACAO COMERCIAL</div>
+                </div>
+                <div class="evo-item">
+                    <div class="evo-icon">&#128218;</div>
+                    <div class="evo-label">TUTOR EDUCACIONAL</div>
+                </div>
+                <div class="evo-item">
+                    <div class="evo-icon">&#127775;</div>
+                    <div class="evo-label">O QUE VOCE IMAGINAR</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- PRA QUEM E + BONUS -->
+        <section id="trigger-acesso" class="reveal" data-delay="2">
+            <div class="section-divider">ACESSO &amp; BONUS</div>
 
             <div class="two-col">
                 <div class="holo-card" data-id="WHO">
-                    <div class="card-title">PRA QUEM É</div>
+                    <div class="card-title">PRA QUEM E</div>
                     <div class="card-body">
                         <div class="bonus-list">
-                            <div class="bonus-item">Curioso por tecnologia</div>
-                            <div class="bonus-item">Dev iniciante ou intermediário</div>
-                            <div class="bonus-item">Quer automação real</div>
-                            <div class="bonus-item">Aprende fazendo</div>
-                            <div class="bonus-item">Cansado de teoria</div>
+                            <div class="bonus-item">Curioso por tecnologia e IA</div>
+                            <div class="bonus-item">Dev iniciante ou intermediario</div>
+                            <div class="bonus-item">Quer automacao real, nao teoria</div>
+                            <div class="bonus-item">Aprende fazendo, com codigo na mao</div>
+                            <div class="bonus-item">Quer ter algo que ninguem mais tem</div>
                         </div>
                     </div>
-                <div class="holo-shimmer"></div><div class="holo-shimmer"></div></div>
+                </div>
 
-                <div class="holo-card" data-id="BONUS">
-                    <div class="card-title">BÔNUS INCLUSOS</div>
+                <div class="holo-card" data-id="INCL">
+                    <div class="card-title">INCLUSO NO CODIGO</div>
                     <div class="card-body">
                         <div class="tag-list">
-                            <span class="tag-pill"><span class="ti">✓</span> Código fonte completo</span>
-                            <span class="tag-pill"><span class="ti">✓</span> 58 arquivos organizados</span>
-                            <span class="tag-pill"><span class="ti">✓</span> Instalador por módulo</span>
-                            <span class="tag-pill"><span class="ti">✓</span> Scripts de automação</span>
-                            <span class="tag-pill"><span class="ti">✓</span> Templates prontos</span>
-                            <span class="tag-pill"><span class="ti">✓</span> 7 perfis de voz</span>
+                            <span class="tag-pill"><span class="ti">&#10003;</span> Codigo-fonte completo</span>
+                            <span class="tag-pill"><span class="ti">&#10003;</span> 58 arquivos organizados</span>
+                            <span class="tag-pill"><span class="ti">&#10003;</span> 4 instaladores EXE</span>
+                            <span class="tag-pill"><span class="ti">&#10003;</span> Scripts de automacao</span>
+                            <span class="tag-pill"><span class="ti">&#10003;</span> Templates prontos</span>
+                            <span class="tag-pill"><span class="ti">&#10003;</span> Sistema funcional completo</span>
                         </div>
                     </div>
-                <div class="holo-shimmer"></div><div class="holo-shimmer"></div></div>
+                </div>
             </div>
         </section>
 
-        <!-- DIFFERENTIATOR -->
-        
-
         <!-- JOURNEY -->
-        <section class="reveal visible" data-delay="4">
-            <div class="section-divider">JORNADA DE CONSTRUÇÃO</div>
+        <section class="reveal" data-delay="4">
+            <div class="section-divider">JORNADA DE CONSTRUCAO</div>
 
             <div class="timeline">
                 <div class="tl-item">
                     <div class="tl-year">ETAPA 01</div>
-                    <div class="tl-line">
-                        <div class="tl-dot"></div>
-                        <div class="tl-track"></div>
-                    </div>
+                    <div class="tl-line"><div class="tl-dot"></div><div class="tl-track"></div></div>
                     <div class="tl-content">
                         <div class="tl-title">A BASE</div>
                         <div class="tl-desc">Python, API e IA respondendo. O sistema acorda.</div>
                     </div>
                 </div>
-
                 <div class="tl-item">
                     <div class="tl-year">ETAPA 02</div>
-                    <div class="tl-line">
-                        <div class="tl-dot"></div>
-                        <div class="tl-track"></div>
-                    </div>
+                    <div class="tl-line"><div class="tl-dot"></div><div class="tl-track"></div></div>
                     <div class="tl-content">
                         <div class="tl-title">IDENTIDADE</div>
-                        <div class="tl-desc">Personalidade, memória e interface holográfica funcionando.</div>
+                        <div class="tl-desc">Personalidade, memoria e interface holografica funcionando.</div>
                     </div>
                 </div>
-
                 <div class="tl-item">
                     <div class="tl-year">ETAPA 03</div>
-                    <div class="tl-line">
-                        <div class="tl-dot"></div>
-                        <div class="tl-track"></div>
-                    </div>
+                    <div class="tl-line"><div class="tl-dot"></div><div class="tl-track"></div></div>
                     <div class="tl-content">
                         <div class="tl-title">PODER</div>
-                        <div class="tl-desc">Controle total do PC, Spotify, browser, arquivos — tudo por voz.</div>
+                        <div class="tl-desc">Controle total do PC, Spotify, browser, arquivos &mdash; tudo por voz.</div>
                     </div>
                 </div>
-
                 <div class="tl-item">
                     <div class="tl-year">ETAPA 04</div>
-                    <div class="tl-line">
-                        <div class="tl-dot"></div>
-                    </div>
+                    <div class="tl-line"><div class="tl-dot"></div></div>
                     <div class="tl-content">
-                        <div class="tl-title">CONEXÃO</div>
-                        <div class="tl-desc">Telegram, WhatsApp, casa inteligente e vozes clonadas. Sistema completo.</div>
+                        <div class="tl-title">CONEXAO</div>
+                        <div class="tl-desc">Telegram, WhatsApp, casa inteligente e vozes. Sistema completo.</div>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- CTA SECTION -->
-        <section id="cta" class="reveal visible" data-delay="1">
-            <div class="cta-badge">▸ PROTOCOLO DE ACESSO INICIANDO</div>
+        <!-- PRICING -->
+        <section id="pricing" class="reveal" data-delay="1">
+            <div class="section-divider">PROTOCOLO DE ACESSO</div>
+
+            <div class="price-card">
+                <div class="price-tag-label">&#9670; 100 PRIMEIRAS VAGAS &#9670;</div>
+                <div class="price-value"><span class="currency">R$</span> 197</div>
+                <div class="price-note">PAGAMENTO UNICO // ACESSO IMEDIATO // PRECO PROMOCIONAL</div>
+
+                <div class="price-features">
+                    <div class="price-feat"><span class="check">&#10003;</span> 7 modulos completos e funcionais</div>
+                    <div class="price-feat"><span class="check">&#10003;</span> 58 arquivos de codigo-fonte</div>
+                    <div class="price-feat"><span class="check">&#10003;</span> 27 ferramentas de voz integradas</div>
+                    <div class="price-feat"><span class="check">&#10003;</span> 4 instaladores automaticos (.exe)</div>
+                    <div class="price-feat"><span class="check">&#10003;</span> WhatsApp + Telegram + Home Assistant</div>
+                    <div class="price-feat"><span class="check">&#10003;</span> Interface holografica desktop</div>
+                    <div class="price-feat"><span class="check">&#10003;</span> Memoria persistente + personalidade</div>
+                    <div class="price-feat"><span class="check">&#10003;</span> Bonus: vozes tematicas exclusivas</div>
+                </div>
+
+                <a href="https://go.hotmart.com/C105392153Y?dp=1" target="_blank" class="btn-buy" style="margin:0 auto;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polyline>
+                    </svg>
+                    QUERO MEU ACESSO
+                </a>
+                <span class="btn-soon" style="margin-top:16px;">// ACESSO IMEDIATO APOS CONFIRMACAO</span>
+            </div>
+
+            <div style="text-align:center;margin-top:16px;">
+                <a href="#" class="btn-access" style="padding:14px 28px;font-size:11px;">
+                    <svg class="btn-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                    </svg>
+                    CURSO COMPLETO &mdash; EM BREVE
+                </a>
+                <span class="btn-soon">// VIDEOAULAS PASSO A PASSO EM DESENVOLVIMENTO</span>
+            </div>
+        </section>
+
+        <!-- CTA FINAL -->
+        <section id="cta" class="reveal" data-delay="1">
+            <div class="cta-badge">&#9654; PROTOCOLO DE ACESSO ATIVO</div>
 
             <h2 class="cta-title">SUA IA.<br>DO ZERO. DO SEU JEITO.</h2>
 
             <p class="cta-sub">
-                O primeiro curso completo para criar um assistente pessoal de IA em português.<br>
-                <strong>Funcional. Inteligente. Totalmente seu.</strong>
+                O primeiro sistema completo de IA pessoal em portugues.<br>
+                <strong>Funcional. Inteligente. Totalmente seu.</strong><br><br>
+                Nao espere o curso &mdash; o codigo ja esta pronto.
             </p>
 
-            <a href="#" class="btn-access" style="margin-top:8px">
-                <svg class="btn-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+            <a href="https://go.hotmart.com/C105392153Y?dp=1" target="_blank" class="btn-buy">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
                 </svg>
-                EM BREVE
+                QUERO MEU ACESSO
             </a>
-            <span class="btn-soon">// SISTEMA EM PREPARAÇÃO — ACESSO LIBERADO EM BREVE</span>
+            <span class="btn-soon">// 7 MODULOS + 27 TOOLS + 58 ARQUIVOS + 4 INSTALADORES</span>
 
-            <!-- nexus HUD -->
-            <div id="nexus-hud">
+            <!-- ia HUD -->
+            <div id="ia-hud">
                 <div id="jhud-inner">
                     <div class="jhud-scan"></div>
                     <div class="jhud-header">
                         <span class="jhud-dot"></span>
-                        <span class="jhud-title">nexus</span>
+                        <span class="jhud-title">ia</span>
                         <span class="jhud-index" id="jhud-index">01 / 05</span>
                     </div>
-                    <div id="jhud-caption">
-                        <span class="jhud-cursor"></span>
-                    </div>
+                    <div id="jhud-caption"><span class="jhud-cursor"></span></div>
                     <canvas id="jhud-canvas" width="280" height="36"></canvas>
                     <div class="jhud-footer">
                         <span id="jhud-status">SINAL DETECTADO</span>
@@ -2128,8 +929,24 @@
             </div>
         </section>
 
-        <!-- Social -->
-        <section class="reveal visible" data-delay="2">
+        <!-- BONUS VOZES (no final, generico) -->
+        <section class="reveal" data-delay="2">
+            <div class="section-divider">BONUS EXCLUSIVO</div>
+
+            <div class="holo-card" data-id="BONUS" style="text-align:center;">
+                <div class="card-title" style="justify-content:center;">VOZES TEMATICAS</div>
+                <div class="card-body" style="max-width:420px;margin:0 auto;">
+                    Pacote com <strong>perfis de voz clonadas e personalidades unicas</strong> prontas para usar.
+                    Troque a voz e a personalidade da sua IA com um clique.
+                    Inclui instalador dedicado para configuracao automatica.
+                    <br><br>
+                    <em style="color:var(--c1);font-size:12px;font-style:italic;">* Vozes criadas para fins de entretenimento e estudo.</em>
+                </div>
+            </div>
+        </section>
+
+        <!-- SOCIAL -->
+        <section class="reveal" data-delay="2">
             <div class="social-row">
                 <a href="https://www.instagram.com/vjdanilocoimbra" class="social-link" target="_blank">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -2140,24 +957,23 @@
                     @vjdanilocoimbra
                 </a>
             </div>
-
             <div class="sys-stamp">
-                DANILO COIMBRA // IA DO ZERO // BUILD 2025 // ALL SYSTEMS NOMINAL
+                DANILO COIMBRA // IA SYSTEM // BUILD 2025 // ALL SYSTEMS NOMINAL
             </div>
         </section>
     </div>
 
-    <!-- Audio tracks (hidden) -->
-    
-    
-    
-    
-    
+    <!-- Audio tracks (hidden) - add your audio files here -->
+    <!-- <audio id="aud1" src="audio/track1.mp3" preload="auto"></audio> -->
+    <!-- <audio id="aud2" src="audio/track2.mp3" preload="auto"></audio> -->
+    <!-- <audio id="aud3" src="audio/track3.mp3" preload="auto"></audio> -->
+    <!-- <audio id="aud4" src="audio/track4.mp3" preload="auto"></audio> -->
+    <!-- <audio id="aud5" src="audio/track5.mp3" preload="auto"></audio> -->
 
     <script>
-        // ════════════════════════════════════════════════════════════════════════
-        // 1. LIVING NEURAL NETWORK BACKGROUND — Slow organic constellation
-        // ════════════════════════════════════════════════════════════════════════
+        // ========================================================================
+        // 1. LIVING NEURAL NETWORK BACKGROUND
+        // ========================================================================
         (function(){
             const cvs = document.getElementById('bg-canvas');
             const ctx = cvs.getContext('2d');
@@ -2166,16 +982,14 @@
             function resize(){
                 W = cvs.width = window.innerWidth;
                 H = cvs.height = window.innerHeight;
-                // Re-spread particles on resize
                 particles.forEach(p => {
                     if (p.x > W) p.x = Math.random() * W;
                     if (p.y > H) p.y = Math.random() * H;
                 });
             }
 
-            // --- Neural nodes: mix of hub nodes (bigger) and satellite nodes ---
             const TOTAL = Math.min(90, Math.floor(window.innerWidth / 12));
-            const HUB_COUNT = Math.floor(TOTAL * 0.15); // 15% are large hubs
+            const HUB_COUNT = Math.floor(TOTAL * 0.15);
             const particles = [];
 
             for (let i = 0; i < TOTAL; i++) {
@@ -2183,22 +997,20 @@
                 particles.push({
                     x: Math.random() * (window.innerWidth || 1400),
                     y: Math.random() * (window.innerHeight || 900),
-                    // Very slow drift — "breathing" organic feel
                     vx: (Math.random() - .5) * (isHub ? .06 : .12),
                     vy: (Math.random() - .5) * (isHub ? .06 : .12),
                     r: isHub ? (2.2 + Math.random() * 1.8) : (0.8 + Math.random() * 1.2),
                     pulse: Math.random() * Math.PI * 2,
                     pulseSpeed: .005 + Math.random() * .008,
                     hub: isHub,
-                    // Each node has a "breath" offset for organic feel
                     breathPhase: Math.random() * Math.PI * 2,
                     breathAmp: 0.3 + Math.random() * 0.4,
                 });
             }
 
-            const CONNECT_DIST = 200;   // Longer connections for denser network
+            const CONNECT_DIST = 200;
             const MOUSE_DIST = 220;
-            const DATA_PULSE_SPEED = 0.003; // Slow data flowing along connections
+            const DATA_PULSE_SPEED = 0.003;
             let time = 0;
 
             resize();
@@ -2211,21 +1023,16 @@
                 ctx.clearRect(0, 0, W, H);
                 time += 1;
 
-                // Update positions — very gentle drift
                 particles.forEach(p => {
-                    // Organic breathing movement
-                    const breath = Math.sin(time * 0.002 + p.breathPhase) * p.breathAmp;
                     p.x += p.vx + Math.sin(time * 0.001 + p.breathPhase) * 0.02;
                     p.y += p.vy + Math.cos(time * 0.0012 + p.breathPhase) * 0.02;
                     p.pulse += p.pulseSpeed;
 
-                    // Wrap around
                     if (p.x < -40) p.x = W + 40;
                     if (p.x > W + 40) p.x = -40;
                     if (p.y < -40) p.y = H + 40;
                     if (p.y > H + 40) p.y = -40;
 
-                    // Mouse: gentle attraction (not repulsion)
                     const dx = mouse.x - p.x, dy = mouse.y - p.y;
                     const dist = Math.sqrt(dx*dx + dy*dy);
                     if (dist < MOUSE_DIST && dist > 10) {
@@ -2234,344 +1041,176 @@
                         p.vy += dy * f;
                     }
 
-                    // Speed limit — keep it slow
                     const speed = Math.sqrt(p.vx*p.vx + p.vy*p.vy);
                     const maxSpeed = p.hub ? 0.12 : 0.22;
-                    if (speed > maxSpeed) {
-                        p.vx *= maxSpeed / speed;
-                        p.vy *= maxSpeed / speed;
-                    }
-
-                    p.vx *= .998;
-                    p.vy *= .998;
+                    if (speed > maxSpeed) { p.vx *= maxSpeed / speed; p.vy *= maxSpeed / speed; }
+                    p.vx *= .998; p.vy *= .998;
                 });
 
-                // --- Draw connections with data pulse effect ---
                 for (let i = 0; i < particles.length; i++) {
                     const pi = particles[i];
                     for (let j = i+1; j < particles.length; j++) {
                         const pj = particles[j];
                         const dx = pi.x - pj.x, dy = pi.y - pj.y;
                         const d = Math.sqrt(dx*dx + dy*dy);
-
                         if (d < CONNECT_DIST) {
                             const fade = 1 - d / CONNECT_DIST;
-                            // Base connection line
                             const baseAlpha = fade * (pi.hub || pj.hub ? 0.25 : 0.15);
-
-                            ctx.beginPath();
-                            ctx.moveTo(pi.x, pi.y);
-                            ctx.lineTo(pj.x, pj.y);
+                            ctx.beginPath(); ctx.moveTo(pi.x, pi.y); ctx.lineTo(pj.x, pj.y);
                             ctx.strokeStyle = `rgba(0,180,220,${baseAlpha})`;
-                            ctx.lineWidth = pi.hub && pj.hub ? 0.8 : 0.5;
-                            ctx.stroke();
+                            ctx.lineWidth = pi.hub && pj.hub ? 0.8 : 0.5; ctx.stroke();
 
-                            // Data pulse traveling along the line (slow)
                             const pulsePos = (Math.sin(time * DATA_PULSE_SPEED + i * 0.7 + j * 0.3) + 1) * 0.5;
                             const px = pi.x + (pj.x - pi.x) * pulsePos;
                             const py = pi.y + (pj.y - pi.y) * pulsePos;
                             const pulseAlpha = fade * 0.5 * (0.3 + 0.7 * Math.sin(time * 0.01 + i));
-
                             if (pulseAlpha > 0.08) {
                                 const pg = ctx.createRadialGradient(px, py, 0, px, py, 4);
                                 pg.addColorStop(0, `rgba(0,212,255,${pulseAlpha})`);
                                 pg.addColorStop(1, 'rgba(0,212,255,0)');
-                                ctx.beginPath();
-                                ctx.arc(px, py, 4, 0, Math.PI*2);
-                                ctx.fillStyle = pg;
-                                ctx.fill();
+                                ctx.beginPath(); ctx.arc(px, py, 4, 0, Math.PI*2);
+                                ctx.fillStyle = pg; ctx.fill();
                             }
                         }
                     }
                 }
 
-                // --- Draw nodes ---
                 particles.forEach(p => {
                     const bri = 0.5 + 0.5 * Math.sin(p.pulse);
                     const alpha = p.hub ? (0.5 + 0.4 * bri) : (0.3 + 0.4 * bri);
                     const r = p.r * (0.85 + 0.3 * bri);
-
-                    // Outer glow
                     const glowR = r * (p.hub ? 5 : 3.5);
                     const grd = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, glowR);
                     grd.addColorStop(0, `rgba(0,212,255,${alpha * 0.6})`);
                     grd.addColorStop(0.4, `rgba(0,180,220,${alpha * 0.2})`);
                     grd.addColorStop(1, 'rgba(0,212,255,0)');
-                    ctx.beginPath();
-                    ctx.arc(p.x, p.y, glowR, 0, Math.PI*2);
-                    ctx.fillStyle = grd;
+                    ctx.beginPath(); ctx.arc(p.x, p.y, glowR, 0, Math.PI*2); ctx.fillStyle = grd; ctx.fill();
+
+                    ctx.beginPath(); ctx.arc(p.x, p.y, r, 0, Math.PI*2);
+                    ctx.fillStyle = p.hub ? `rgba(160,235,255,${alpha})` : `rgba(0,212,255,${alpha})`;
                     ctx.fill();
 
-                    // Core dot
-                    ctx.beginPath();
-                    ctx.arc(p.x, p.y, r, 0, Math.PI*2);
-                    ctx.fillStyle = p.hub
-                        ? `rgba(160,235,255,${alpha})`
-                        : `rgba(0,212,255,${alpha})`;
-                    ctx.fill();
-
-                    // Bright center for hubs
                     if (p.hub) {
-                        ctx.beginPath();
-                        ctx.arc(p.x, p.y, r * 0.4, 0, Math.PI*2);
-                        ctx.fillStyle = `rgba(255,255,255,${alpha * 0.7})`;
-                        ctx.fill();
+                        ctx.beginPath(); ctx.arc(p.x, p.y, r * 0.4, 0, Math.PI*2);
+                        ctx.fillStyle = `rgba(255,255,255,${alpha * 0.7})`; ctx.fill();
                     }
                 });
 
-                // --- Mouse proximity highlight ---
                 if (mouse.x > 0 && mouse.y > 0) {
                     const mg = ctx.createRadialGradient(mouse.x, mouse.y, 0, mouse.x, mouse.y, MOUSE_DIST);
-                    mg.addColorStop(0, 'rgba(0,212,255,.03)');
-                    mg.addColorStop(1, 'rgba(0,212,255,0)');
-                    ctx.beginPath();
-                    ctx.arc(mouse.x, mouse.y, MOUSE_DIST, 0, Math.PI*2);
-                    ctx.fillStyle = mg;
-                    ctx.fill();
+                    mg.addColorStop(0, 'rgba(0,212,255,.03)'); mg.addColorStop(1, 'rgba(0,212,255,0)');
+                    ctx.beginPath(); ctx.arc(mouse.x, mouse.y, MOUSE_DIST, 0, Math.PI*2);
+                    ctx.fillStyle = mg; ctx.fill();
                 }
-
                 requestAnimationFrame(draw);
             }
             draw();
         })();
 
-        // ════════════════════════════════════════════════════════════════════════
-        // 2. N.E.X.U.S. CORE — Replica of the real system interface
-        // ════════════════════════════════════════════════════════════════════════
+        // ========================================================================
+        // 2. IA CORE ORB
+        // ========================================================================
         (function(){
             const cvs = document.getElementById('orb-canvas');
             const ctx = cvs.getContext('2d');
-            const S = 380;
-            const cx = S/2, cy = S/2;
+            const S = 380, cx = S/2, cy = S/2;
             let t = 0;
 
-            // --- Constellation particles around the core ---
             const STAR_COUNT = 55;
             const stars = [];
             for (let i = 0; i < STAR_COUNT; i++) {
                 const angle = Math.random() * Math.PI * 2;
                 const dist = 50 + Math.random() * 130;
                 stars.push({
-                    x: cx + Math.cos(angle) * dist,
-                    y: cy + Math.sin(angle) * dist,
-                    r: 0.6 + Math.random() * 2.0,
-                    pulse: Math.random() * Math.PI * 2,
-                    speed: 0.003 + Math.random() * 0.006,
-                    orbitR: dist,
-                    orbitAngle: angle,
-                    orbitSpeed: (Math.random() - 0.5) * 0.0008,
-                    brightness: 0.3 + Math.random() * 0.7,
+                    x: cx + Math.cos(angle) * dist, y: cy + Math.sin(angle) * dist,
+                    r: 0.6 + Math.random() * 2.0, pulse: Math.random() * Math.PI * 2,
+                    speed: 0.003 + Math.random() * 0.006, orbitR: dist, orbitAngle: angle,
+                    orbitSpeed: (Math.random() - 0.5) * 0.0008, brightness: 0.3 + Math.random() * 0.7,
                 });
             }
-
-            // --- Connection distance for constellation ---
             const STAR_CONNECT = 55;
 
             function drawCore(){
                 ctx.clearRect(0, 0, S, S);
 
-                // ── Outer atmospheric glow ──
                 const atm = ctx.createRadialGradient(cx, cy, 20, cx, cy, 180);
-                atm.addColorStop(0, 'rgba(0,212,255,.06)');
-                atm.addColorStop(0.3, 'rgba(0,180,220,.03)');
-                atm.addColorStop(0.6, 'rgba(0,100,180,.01)');
-                atm.addColorStop(1, 'rgba(0,0,0,0)');
-                ctx.beginPath();
-                ctx.arc(cx, cy, 180, 0, Math.PI*2);
-                ctx.fillStyle = atm;
-                ctx.fill();
+                atm.addColorStop(0, 'rgba(0,212,255,.06)'); atm.addColorStop(0.3, 'rgba(0,180,220,.03)');
+                atm.addColorStop(0.6, 'rgba(0,100,180,.01)'); atm.addColorStop(1, 'rgba(0,0,0,0)');
+                ctx.beginPath(); ctx.arc(cx, cy, 180, 0, Math.PI*2); ctx.fillStyle = atm; ctx.fill();
 
-                // ── Update and draw constellation stars ──
-                stars.forEach(s => {
-                    s.orbitAngle += s.orbitSpeed;
-                    s.pulse += s.speed;
-                    s.x = cx + Math.cos(s.orbitAngle) * s.orbitR;
-                    s.y = cy + Math.sin(s.orbitAngle) * s.orbitR;
-                });
+                stars.forEach(s => { s.orbitAngle += s.orbitSpeed; s.pulse += s.speed; s.x = cx + Math.cos(s.orbitAngle) * s.orbitR; s.y = cy + Math.sin(s.orbitAngle) * s.orbitR; });
 
-                // Connections between nearby stars
                 for (let i = 0; i < stars.length; i++) {
                     for (let j = i+1; j < stars.length; j++) {
-                        const dx = stars[i].x - stars[j].x;
-                        const dy = stars[i].y - stars[j].y;
+                        const dx = stars[i].x - stars[j].x, dy = stars[i].y - stars[j].y;
                         const d = Math.sqrt(dx*dx + dy*dy);
                         if (d < STAR_CONNECT) {
-                            const fade = (1 - d/STAR_CONNECT);
-                            ctx.beginPath();
-                            ctx.moveTo(stars[i].x, stars[i].y);
-                            ctx.lineTo(stars[j].x, stars[j].y);
-                            ctx.strokeStyle = `rgba(0,180,220,${fade * 0.12})`;
-                            ctx.lineWidth = 0.4;
-                            ctx.stroke();
+                            ctx.beginPath(); ctx.moveTo(stars[i].x, stars[i].y); ctx.lineTo(stars[j].x, stars[j].y);
+                            ctx.strokeStyle = `rgba(0,180,220,${(1-d/STAR_CONNECT)*0.12})`; ctx.lineWidth = 0.4; ctx.stroke();
                         }
                     }
                 }
 
-                // Draw star dots
                 stars.forEach(s => {
                     const bri = s.brightness * (0.4 + 0.6 * (0.5 + 0.5 * Math.sin(s.pulse)));
-                    // Glow
                     const sg = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, s.r * 4);
-                    sg.addColorStop(0, `rgba(0,212,255,${bri * 0.5})`);
-                    sg.addColorStop(1, 'rgba(0,212,255,0)');
-                    ctx.beginPath();
-                    ctx.arc(s.x, s.y, s.r * 4, 0, Math.PI*2);
-                    ctx.fillStyle = sg;
-                    ctx.fill();
-                    // Core
-                    ctx.beginPath();
-                    ctx.arc(s.x, s.y, s.r, 0, Math.PI*2);
-                    ctx.fillStyle = `rgba(120,220,255,${bri})`;
-                    ctx.fill();
+                    sg.addColorStop(0, `rgba(0,212,255,${bri * 0.5})`); sg.addColorStop(1, 'rgba(0,212,255,0)');
+                    ctx.beginPath(); ctx.arc(s.x, s.y, s.r * 4, 0, Math.PI*2); ctx.fillStyle = sg; ctx.fill();
+                    ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI*2); ctx.fillStyle = `rgba(120,220,255,${bri})`; ctx.fill();
                 });
 
-                // ── Orbital ring 1 (outer, thinner) ──
                 const r1 = 110;
-                ctx.beginPath();
-                ctx.arc(cx, cy, r1, 0, Math.PI*2);
-                ctx.strokeStyle = 'rgba(0,212,255,.08)';
-                ctx.lineWidth = 0.6;
-                ctx.stroke();
-
-                // Tick marks on outer ring
+                ctx.beginPath(); ctx.arc(cx, cy, r1, 0, Math.PI*2); ctx.strokeStyle = 'rgba(0,212,255,.08)'; ctx.lineWidth = 0.6; ctx.stroke();
                 for (let i = 0; i < 60; i++) {
-                    const a = (i/60) * Math.PI * 2;
-                    const inner = r1 - (i%5===0 ? 5 : 2);
-                    ctx.beginPath();
-                    ctx.moveTo(cx + Math.cos(a)*inner, cy + Math.sin(a)*inner);
-                    ctx.lineTo(cx + Math.cos(a)*r1, cy + Math.sin(a)*r1);
-                    ctx.strokeStyle = `rgba(0,212,255,${i%5===0 ? .12 : .05})`;
-                    ctx.lineWidth = i%5===0 ? 0.8 : 0.4;
-                    ctx.stroke();
+                    const a = (i/60) * Math.PI * 2; const inner = r1 - (i%5===0 ? 5 : 2);
+                    ctx.beginPath(); ctx.moveTo(cx + Math.cos(a)*inner, cy + Math.sin(a)*inner); ctx.lineTo(cx + Math.cos(a)*r1, cy + Math.sin(a)*r1);
+                    ctx.strokeStyle = `rgba(0,212,255,${i%5===0 ? .12 : .05})`; ctx.lineWidth = i%5===0 ? 0.8 : 0.4; ctx.stroke();
                 }
 
-                // ── Orbital ring 2 (inner) ──
                 const r2 = 75;
-                ctx.beginPath();
-                ctx.arc(cx, cy, r2, 0, Math.PI*2);
-                ctx.strokeStyle = 'rgba(0,212,255,.1)';
-                ctx.lineWidth = 0.7;
-                ctx.stroke();
+                ctx.beginPath(); ctx.arc(cx, cy, r2, 0, Math.PI*2); ctx.strokeStyle = 'rgba(0,212,255,.1)'; ctx.lineWidth = 0.7; ctx.stroke();
 
-                // ── Moving arc segments on rings ──
-                // Outer ring arcs
-                for (let i = 0; i < 3; i++) {
-                    const startA = t * 0.15 + i * (Math.PI*2/3);
-                    ctx.beginPath();
-                    ctx.arc(cx, cy, r1, startA, startA + 0.8);
-                    ctx.strokeStyle = 'rgba(0,212,255,.22)';
-                    ctx.lineWidth = 1.2;
-                    ctx.stroke();
-                }
+                for (let i = 0; i < 3; i++) { const startA = t * 0.15 + i * (Math.PI*2/3); ctx.beginPath(); ctx.arc(cx, cy, r1, startA, startA + 0.8); ctx.strokeStyle = 'rgba(0,212,255,.22)'; ctx.lineWidth = 1.2; ctx.stroke(); }
+                for (let i = 0; i < 4; i++) { const startA = -t * 0.2 + i * (Math.PI*2/4); ctx.beginPath(); ctx.arc(cx, cy, r2, startA, startA + 0.5); ctx.strokeStyle = 'rgba(0,212,255,.18)'; ctx.lineWidth = 1; ctx.stroke(); }
 
-                // Inner ring arcs (reverse)
-                for (let i = 0; i < 4; i++) {
-                    const startA = -t * 0.2 + i * (Math.PI*2/4);
-                    ctx.beginPath();
-                    ctx.arc(cx, cy, r2, startA, startA + 0.5);
-                    ctx.strokeStyle = 'rgba(0,212,255,.18)';
-                    ctx.lineWidth = 1;
-                    ctx.stroke();
-                }
-
-                // ── Orbiting dots on rings ──
                 for (let i = 0; i < 4; i++) {
                     const a = t * 0.2 + i * (Math.PI/2);
-                    const ox = cx + Math.cos(a) * r1;
-                    const oy = cy + Math.sin(a) * r1;
-                    ctx.beginPath();
-                    ctx.arc(ox, oy, 2.5, 0, Math.PI*2);
-                    ctx.fillStyle = 'rgba(0,212,255,.5)';
-                    ctx.fill();
+                    const ox = cx + Math.cos(a) * r1, oy = cy + Math.sin(a) * r1;
+                    ctx.beginPath(); ctx.arc(ox, oy, 2.5, 0, Math.PI*2); ctx.fillStyle = 'rgba(0,212,255,.5)'; ctx.fill();
                     const og = ctx.createRadialGradient(ox, oy, 0, ox, oy, 8);
-                    og.addColorStop(0, 'rgba(0,212,255,.3)');
-                    og.addColorStop(1, 'rgba(0,212,255,0)');
-                    ctx.beginPath();
-                    ctx.arc(ox, oy, 8, 0, Math.PI*2);
-                    ctx.fillStyle = og;
-                    ctx.fill();
+                    og.addColorStop(0, 'rgba(0,212,255,.3)'); og.addColorStop(1, 'rgba(0,212,255,0)');
+                    ctx.beginPath(); ctx.arc(ox, oy, 8, 0, Math.PI*2); ctx.fillStyle = og; ctx.fill();
                 }
-
                 for (let i = 0; i < 3; i++) {
                     const a = -t * 0.25 + i * (Math.PI*2/3);
-                    const ox = cx + Math.cos(a) * r2;
-                    const oy = cy + Math.sin(a) * r2;
-                    ctx.beginPath();
-                    ctx.arc(ox, oy, 2, 0, Math.PI*2);
-                    ctx.fillStyle = 'rgba(29,233,182,.5)';
-                    ctx.fill();
+                    ctx.beginPath(); ctx.arc(cx + Math.cos(a)*r2, cy + Math.sin(a)*r2, 2, 0, Math.PI*2); ctx.fillStyle = 'rgba(29,233,182,.5)'; ctx.fill();
                 }
 
-                // ── Central orb — multi-layered glow ──
-                // Outer haze
                 const haze = ctx.createRadialGradient(cx, cy, 0, cx, cy, 40);
-                haze.addColorStop(0, 'rgba(0,212,255,.25)');
-                haze.addColorStop(0.5, 'rgba(0,150,200,.08)');
-                haze.addColorStop(1, 'rgba(0,0,0,0)');
-                ctx.beginPath();
-                ctx.arc(cx, cy, 40, 0, Math.PI*2);
-                ctx.fillStyle = haze;
-                ctx.fill();
+                haze.addColorStop(0, 'rgba(0,212,255,.25)'); haze.addColorStop(0.5, 'rgba(0,150,200,.08)'); haze.addColorStop(1, 'rgba(0,0,0,0)');
+                ctx.beginPath(); ctx.arc(cx, cy, 40, 0, Math.PI*2); ctx.fillStyle = haze; ctx.fill();
 
-                // Mid glow (pulsing)
                 const pulseVal = 0.7 + 0.3 * Math.sin(t * 0.8);
                 const mid = ctx.createRadialGradient(cx, cy, 0, cx, cy, 22);
-                mid.addColorStop(0, `rgba(120,230,255,${0.6 * pulseVal})`);
-                mid.addColorStop(0.5, `rgba(0,212,255,${0.3 * pulseVal})`);
-                mid.addColorStop(1, 'rgba(0,100,200,0)');
-                ctx.beginPath();
-                ctx.arc(cx, cy, 22, 0, Math.PI*2);
-                ctx.fillStyle = mid;
-                ctx.fill();
+                mid.addColorStop(0, `rgba(120,230,255,${0.6 * pulseVal})`); mid.addColorStop(0.5, `rgba(0,212,255,${0.3 * pulseVal})`); mid.addColorStop(1, 'rgba(0,100,200,0)');
+                ctx.beginPath(); ctx.arc(cx, cy, 22, 0, Math.PI*2); ctx.fillStyle = mid; ctx.fill();
 
-                // Inner bright sphere
                 const inner = ctx.createRadialGradient(cx - 3, cy - 3, 0, cx, cy, 12);
-                inner.addColorStop(0, `rgba(255,255,255,${0.85 * pulseVal})`);
-                inner.addColorStop(0.3, `rgba(180,240,255,${0.7 * pulseVal})`);
-                inner.addColorStop(0.7, `rgba(0,212,255,${0.4 * pulseVal})`);
-                inner.addColorStop(1, 'rgba(0,120,200,0)');
-                ctx.beginPath();
-                ctx.arc(cx, cy, 12, 0, Math.PI*2);
-                ctx.fillStyle = inner;
-                ctx.fill();
+                inner.addColorStop(0, `rgba(255,255,255,${0.85 * pulseVal})`); inner.addColorStop(0.3, `rgba(180,240,255,${0.7 * pulseVal})`);
+                inner.addColorStop(0.7, `rgba(0,212,255,${0.4 * pulseVal})`); inner.addColorStop(1, 'rgba(0,120,200,0)');
+                ctx.beginPath(); ctx.arc(cx, cy, 12, 0, Math.PI*2); ctx.fillStyle = inner; ctx.fill();
 
-                // Hot white center
                 const hot = ctx.createRadialGradient(cx, cy, 0, cx, cy, 5);
-                hot.addColorStop(0, `rgba(255,255,255,${0.95 * pulseVal})`);
-                hot.addColorStop(1, 'rgba(200,240,255,0)');
-                ctx.beginPath();
-                ctx.arc(cx, cy, 5, 0, Math.PI*2);
-                ctx.fillStyle = hot;
-                ctx.fill();
+                hot.addColorStop(0, `rgba(255,255,255,${0.95 * pulseVal})`); hot.addColorStop(1, 'rgba(200,240,255,0)');
+                ctx.beginPath(); ctx.arc(cx, cy, 5, 0, Math.PI*2); ctx.fillStyle = hot; ctx.fill();
 
-                // ── Lens flare lines from core ──
-                ctx.save();
-                ctx.globalAlpha = 0.06 + 0.04 * Math.sin(t * 0.5);
-                ctx.strokeStyle = '#00d4ff';
-                ctx.lineWidth = 0.5;
-                for (let i = 0; i < 4; i++) {
-                    const a = t * 0.1 + i * (Math.PI/2);
-                    ctx.beginPath();
-                    ctx.moveTo(cx + Math.cos(a) * 8, cy + Math.sin(a) * 8);
-                    ctx.lineTo(cx + Math.cos(a) * 55, cy + Math.sin(a) * 55);
-                    ctx.stroke();
-                }
+                ctx.save(); ctx.globalAlpha = 0.06 + 0.04 * Math.sin(t * 0.5); ctx.strokeStyle = '#00d4ff'; ctx.lineWidth = 0.5;
+                for (let i = 0; i < 4; i++) { const a = t * 0.1 + i * (Math.PI/2); ctx.beginPath(); ctx.moveTo(cx + Math.cos(a)*8, cy + Math.sin(a)*8); ctx.lineTo(cx + Math.cos(a)*55, cy + Math.sin(a)*55); ctx.stroke(); }
                 ctx.restore();
 
-                // ── Connection line from core to mic (bottom) ──
-                ctx.beginPath();
-                ctx.moveTo(cx, cy + 22);
-                ctx.lineTo(cx, cy + 130);
-                ctx.strokeStyle = 'rgba(0,212,255,.1)';
-                ctx.lineWidth = 0.5;
-                ctx.stroke();
-
-                // Small dot at connection midpoint
+                ctx.beginPath(); ctx.moveTo(cx, cy + 22); ctx.lineTo(cx, cy + 130); ctx.strokeStyle = 'rgba(0,212,255,.1)'; ctx.lineWidth = 0.5; ctx.stroke();
                 const connDot = cy + 80 + Math.sin(t * 0.6) * 10;
-                ctx.beginPath();
-                ctx.arc(cx, connDot, 1.5, 0, Math.PI*2);
-                ctx.fillStyle = 'rgba(0,212,255,.3)';
-                ctx.fill();
+                ctx.beginPath(); ctx.arc(cx, connDot, 1.5, 0, Math.PI*2); ctx.fillStyle = 'rgba(0,212,255,.3)'; ctx.fill();
 
                 t += .016;
                 requestAnimationFrame(drawCore);
@@ -2579,16 +1218,16 @@
             drawCore();
         })();
 
-        // ════════════════════════════════════════════════════════════════════════
+        // ========================================================================
         // 3. BOOT SEQUENCE
-        // ════════════════════════════════════════════════════════════════════════
+        // ========================================================================
         (function(){
             const log = document.getElementById('boot-log');
             const lines = [
-                '> SYSTEM BOOT v2.4...',
+                '> IA BOOT v2.4...',
                 '> NEURAL CORE: ONLINE',
-                '> IA INICIALIZADA. CONTROLE ATIVO.',
-                '> DANILO COIMBRA // SISTEMA PRONTO',
+                '> 27 TOOLS LOADED. AI READY.',
+                '> AGUARDANDO NOVO OPERADOR...',
             ];
             let li = 0, ci = 0, current = null;
 
@@ -2601,128 +1240,21 @@
                     if (log.children.length > 4) log.removeChild(log.children[0]);
                 }
                 if (ci < lines[li].length) {
-                    current.textContent = lines[li].slice(0, ci+1) + '█';
+                    current.textContent = lines[li].slice(0, ci+1) + '\u2588';
                     ci++;
                     setTimeout(typeNext, 28 + Math.random()*20);
                 } else {
                     current.textContent = lines[li];
-                    li++;
-                    ci = 0;
-                    current = null;
+                    li++; ci = 0; current = null;
                     if (li < lines.length) setTimeout(typeNext, 180);
                 }
             }
             setTimeout(typeNext, 600);
         })();
 
-        // ════════════════════════════════════════════════════════════════════════
-        // 4. RADAR CHART
-        // ════════════════════════════════════════════════════════════════════════
-        (function(){
-            const cvs = document.getElementById('radar-canvas');
-            if (!cvs) return;
-            const ctx = cvs.getContext('2d');
-            const S = 260, cx = S/2, cy = S/2, R = 90;
-            let progress = 0;
-
-            const skills = [
-                { label: 'VOZ/STT', v: .97 },
-                { label: 'MEMORY', v: .98 },
-                { label: 'TOOLS', v: .95 },
-                { label: 'PC CTRL', v: .93 },
-                { label: 'HOME AUTO', v: .90 },
-                { label: 'DEPLOY', v: .92 },
-            ];
-            const N = skills.length;
-
-            function angleOf(i){
-                return (i / N) * Math.PI*2 - Math.PI/2;
-            }
-
-            function ptAt(i, r){
-                return [cx + Math.cos(angleOf(i)) * r, cy + Math.sin(angleOf(i)) * r];
-            }
-
-            function draw(){
-                ctx.clearRect(0, 0, S, S);
-                const p = Math.min(progress, 1);
-
-                [.25,.5,.75,1].forEach(f => {
-                    ctx.beginPath();
-                    for (let i = 0; i <= N; i++) {
-                        const [x,y] = ptAt(i % N, R * f);
-                        i === 0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
-                    }
-                    ctx.closePath();
-                    ctx.strokeStyle = `rgba(0,212,255,${.06 + f*.04})`;
-                    ctx.lineWidth = .8;
-                    ctx.stroke();
-                });
-
-                for (let i = 0; i < N; i++) {
-                    const [x,y] = ptAt(i, R);
-                    ctx.beginPath();
-                    ctx.moveTo(cx, cy);
-                    ctx.lineTo(x, y);
-                    ctx.strokeStyle = 'rgba(0,212,255,.1)';
-                    ctx.lineWidth = .8;
-                    ctx.stroke();
-                }
-
-                ctx.beginPath();
-                skills.forEach((s, i) => {
-                    const [x,y] = ptAt(i, R * s.v * p);
-                    i === 0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
-                });
-                ctx.closePath();
-                ctx.fillStyle = 'rgba(0,212,255,.08)';
-                ctx.fill();
-                ctx.strokeStyle = 'rgba(0,212,255,.5)';
-                ctx.lineWidth = 1.5;
-                ctx.stroke();
-
-                skills.forEach((s, i) => {
-                    const [x,y] = ptAt(i, R * s.v * p);
-                    const g = ctx.createRadialGradient(x,y,0,x,y,6);
-                    g.addColorStop(0, 'rgba(29,233,182,.9)');
-                    g.addColorStop(1, 'rgba(29,233,182,0)');
-                    ctx.beginPath();
-                    ctx.arc(x,y,6,0,Math.PI*2);
-                    ctx.fillStyle = g;
-                    ctx.fill();
-                    ctx.beginPath();
-                    ctx.arc(x,y,2.5,0,Math.PI*2);
-                    ctx.fillStyle = '#1de9b6';
-                    ctx.fill();
-                });
-
-                skills.forEach((s, i) => {
-                    const [x,y] = ptAt(i, R + 20);
-                    ctx.fillStyle = 'rgba(200,232,245,.45)';
-                    ctx.font = '7px "Share Tech Mono"';
-                    ctx.textAlign = 'center';
-                    ctx.textBaseline = 'middle';
-                    ctx.fillText(s.label, x, y);
-                });
-
-                if (progress < 1) {
-                    progress += .018;
-                    requestAnimationFrame(draw);
-                }
-            }
-
-            const obs = new IntersectionObserver(entries => {
-                if (entries[0].isIntersecting){
-                    progress = 0;
-                    draw();
-                }
-            }, { threshold: .3 });
-            obs.observe(cvs);
-        })();
-
-        // ════════════════════════════════════════════════════════════════════════
-        // 5. COUNTER ANIMATION
-        // ════════════════════════════════════════════════════════════════════════
+        // ========================================================================
+        // 4. COUNTER ANIMATION
+        // ========================================================================
         (function(){
             const block = document.getElementById('metrics-block');
             if (!block) return;
@@ -2735,7 +1267,6 @@
                     const target = +el.dataset.target;
                     const dur = 1800;
                     const start = performance.now();
-
                     function tick(now){
                         const t = Math.min((now - start) / dur, 1);
                         const ease = 1 - Math.pow(1 - t, 3);
@@ -2746,60 +1277,33 @@
                     requestAnimationFrame(tick);
                 });
             }
-
-            new IntersectionObserver(e => {
-                if(e[0].isIntersecting) animate();
-            }, {threshold:.4})
-            .observe(block);
+            new IntersectionObserver(e => { if(e[0].isIntersecting) animate(); }, {threshold:.4}).observe(block);
         })();
 
-        // ════════════════════════════════════════════════════════════════════════
-        // 6. SKILL BAR ANIMATION
-        // ════════════════════════════════════════════════════════════════════════
-        (function(){
-            const list = document.getElementById('skill-list');
-            if (!list) return;
-            let done = false;
-
-            new IntersectionObserver(entries => {
-                if (entries[0].isIntersecting && !done) {
-                    done = true;
-                    list.querySelectorAll('.skill-fill').forEach(bar => {
-                        const pct = bar.dataset.pct;
-                        setTimeout(() => {
-                            bar.style.width = pct + '%';
-                        }, 200);
-                    });
-                }
-            }, { threshold: .3 }).observe(list);
-        })();
-
-        // ════════════════════════════════════════════════════════════════════════
-        // 7. SCROLL REVEAL
-        // ════════════════════════════════════════════════════════════════════════
+        // ========================================================================
+        // 5. SCROLL REVEAL
+        // ========================================================================
         (function(){
             const obs = new IntersectionObserver(entries => {
-                entries.forEach(e => {
-                    if (e.isIntersecting) e.target.classList.add('visible');
-                });
+                entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
             }, { threshold: .12 });
             document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
         })();
 
-        // ════════════════════════════════════════════════════════════════════════
-        // 8. nexus CINEMATIC AUDIO SYSTEM v2
-        // ════════════════════════════════════════════════════════════════════════
+        // ========================================================================
+        // 6. IA CINEMATIC AUDIO SYSTEM
+        // ========================================================================
         (function () {
             'use strict';
             var TRACKS = [
                 { id: 'aud1', caption: 'Protocolo de acesso iniciado, senhor.', idx: '01 / 05' },
-                { id: 'aud2', caption: 'Diagnóstico do sistema em andamento.', idx: '02 / 05' },
-                { id: 'aud3', caption: 'Módulos de treinamento carregados e prontos.', idx: '03 / 05' },
+                { id: 'aud2', caption: 'Diagnostico do sistema em andamento.', idx: '02 / 05' },
+                { id: 'aud3', caption: 'Modulos de treinamento carregados e prontos.', idx: '03 / 05' },
                 { id: 'aud4', caption: 'Vantagem computacional confirmada, senhor.', idx: '04 / 05' },
-                { id: 'aud5', caption: 'Janela de acesso disponível. A decisão é sua.', idx: '05 / 05' }
+                { id: 'aud5', caption: 'Janela de acesso disponivel. A decisao e sua.', idx: '05 / 05' }
             ];
 
-            var hudEl = document.getElementById('nexus-hud');
+            var hudEl = document.getElementById('ia-hud');
             var captionEl = document.getElementById('jhud-caption');
             var indexEl = document.getElementById('jhud-index');
             var statusEl = document.getElementById('jhud-status');
@@ -2808,96 +1312,54 @@
             var cCtx = canvasEl ? canvasEl.getContext('2d') : null;
             var unlockBtn = document.getElementById('audio-unlock');
 
-            var audioCtx = null;
-            var analyser = null;
-            var gains = [];
-            var webAudioOk = false;
-            var unlocked = false;
-            var playing = false;
-            var current = -1;
-            var triggered = {};
-            var rafId = null;
-            var simT = 0;
-            var typeTimer = null;
-            var timerRaf = null;
-            var hideTimer = null;
+            var audioCtx = null, analyser = null, gains = [], webAudioOk = false;
+            var unlocked = false, playing = false, current = -1, triggered = {};
+            var rafId = null, simT = 0, typeTimer = null, timerRaf = null, hideTimer = null;
 
             function tryBootWebAudio() {
                 if (audioCtx) return;
                 try {
                     audioCtx = new (window.AudioContext || window.webkitAudioContext)();
                     analyser = audioCtx.createAnalyser();
-                    analyser.fftSize = 512;
-                    analyser.smoothingTimeConstant = 0.82;
+                    analyser.fftSize = 512; analyser.smoothingTimeConstant = 0.82;
                     analyser.connect(audioCtx.destination);
-
                     var allOk = true;
-                    TRACKS.forEach(function (track, i) {
+                    TRACKS.forEach(function (track) {
                         var el = document.getElementById(track.id);
-                        if (!el) {
-                            gains.push(null);
-                            allOk = false;
-                            return;
-                        }
+                        if (!el) { gains.push(null); allOk = false; return; }
                         try {
                             var src = audioCtx.createMediaElementSource(el);
-                            var gain = audioCtx.createGain();
-                            gain.gain.value = 0;
-                            src.connect(gain);
-                            gain.connect(analyser);
-                            gains.push(gain);
-                        } catch (e) {
-                            gains.push(null);
-                            allOk = false;
-                        }
-                        el.addEventListener('ended', function () {
-                            onTrackEnd(i);
-                        });
+                            var gain = audioCtx.createGain(); gain.gain.value = 0;
+                            src.connect(gain); gain.connect(analyser); gains.push(gain);
+                        } catch (e) { gains.push(null); allOk = false; }
+                        el.addEventListener('ended', function () { onTrackEnd(TRACKS.indexOf(track)); });
                     });
                     webAudioOk = allOk;
                 } catch (e) {
                     audioCtx = null;
-                    TRACKS.forEach(function (track, i) {
-                        var el = document.getElementById(track.id);
-                        gains.push(null);
-                        if (el) el.addEventListener('ended', function () {
-                            onTrackEnd(i);
-                        });
+                    TRACKS.forEach(function (track) {
+                        var el = document.getElementById(track.id); gains.push(null);
+                        if (el) el.addEventListener('ended', function () { onTrackEnd(TRACKS.indexOf(track)); });
                     });
                 }
             }
 
             function preAuthorizeAudio() {
                 TRACKS.forEach(function (track) {
-                    var el = document.getElementById(track.id);
-                    if (!el) return;
+                    var el = document.getElementById(track.id); if (!el) return;
                     var p = el.play();
-                    if (p && typeof p.then === 'function') {
-                        p.then(function () {
-                            el.pause();
-                            el.currentTime = 0;
-                        }).catch(function () {});
-                    } else {
-                        el.pause();
-                        el.currentTime = 0;
-                    }
+                    if (p && typeof p.then === 'function') { p.then(function () { el.pause(); el.currentTime = 0; }).catch(function () {}); }
+                    else { el.pause(); el.currentTime = 0; }
                 });
             }
 
             function doFadeIn(el, gainNode) {
                 if (gainNode && audioCtx) {
-                    var now = audioCtx.currentTime;
-                    gainNode.gain.cancelScheduledValues(now);
-                    gainNode.gain.setValueAtTime(0, now);
-                    gainNode.gain.linearRampToValueAtTime(1, now + 0.28);
+                    var now = audioCtx.currentTime; gainNode.gain.cancelScheduledValues(now);
+                    gainNode.gain.setValueAtTime(0, now); gainNode.gain.linearRampToValueAtTime(1, now + 0.28);
                 } else {
-                    el.volume = 0;
-                    var steps = 0;
-                    var iv = setInterval(function () {
-                        steps++;
-                        el.volume = Math.min(1, steps / 10);
-                        if (steps >= 10) clearInterval(iv);
-                    }, 28);
+                    el.volume = 0; var steps = 0;
+                    var iv = setInterval(function () { steps++; el.volume = Math.min(1, steps / 10); if (steps >= 10) clearInterval(iv); }, 28);
                 }
             }
 
@@ -2905,164 +1367,80 @@
                 if (current !== i) return;
                 if (statusEl) statusEl.textContent = 'SINAL ENCERRADO';
                 clearTimeout(hideTimer);
-                hideTimer = setTimeout(function () {
-                    hudEl.classList.remove('active');
-                    stopWaveform();
-                    playing = false;
-                    current = -1;
-                }, 1400);
+                hideTimer = setTimeout(function () { hudEl.classList.remove('active'); stopWaveform(); playing = false; current = -1; }, 1400);
             }
 
             function playTrack(i) {
-                if (!unlocked) return;
-                if (triggered[i]) return;
+                if (!unlocked || triggered[i]) return;
                 triggered[i] = true;
-
                 if (playing && current >= 0) {
                     var prev = document.getElementById(TRACKS[current].id);
-                    if (prev) {
-                        prev.pause();
-                        prev.currentTime = 0;
-                    }
-                    if (gains[current] && audioCtx) {
-                        var n0 = audioCtx.currentTime;
-                        gains[current].gain.cancelScheduledValues(n0);
-                        gains[current].gain.setValueAtTime(0, n0);
-                    }
-                    clearTimeout(hideTimer);
-                    stopWaveform();
+                    if (prev) { prev.pause(); prev.currentTime = 0; }
+                    if (gains[current] && audioCtx) { var n0 = audioCtx.currentTime; gains[current].gain.cancelScheduledValues(n0); gains[current].gain.setValueAtTime(0, n0); }
+                    clearTimeout(hideTimer); stopWaveform();
                 }
-
-                var track = TRACKS[i];
-                var el = document.getElementById(track.id);
-                if (!el) return;
-
-                var gain = gains[i] || null;
-                current = i;
-                playing = true;
-
-                if (audioCtx && audioCtx.state === 'suspended') {
-                    audioCtx.resume().catch(function () {});
-                }
-
+                var track = TRACKS[i]; var el = document.getElementById(track.id); if (!el) return;
+                var gain = gains[i] || null; current = i; playing = true;
+                if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume().catch(function () {});
                 if (indexEl) indexEl.textContent = track.idx;
                 if (statusEl) statusEl.textContent = 'TRANSMITINDO';
-
                 clearTimeout(hideTimer);
-                requestAnimationFrame(function () {
-                    hudEl.classList.add('active');
-                });
-
-                typeCaption(track.caption);
-                flashScreen();
-                doFadeIn(el, gain);
-                el.currentTime = 0;
-                el.play().catch(function (err) {
-                    el.volume = 1;
-                    el.play().catch(function () {});
-                });
-                startWaveform();
-                startTimer(el);
+                requestAnimationFrame(function () { hudEl.classList.add('active'); });
+                typeCaption(track.caption); flashScreen(); doFadeIn(el, gain);
+                el.currentTime = 0; el.play().catch(function () { el.volume = 1; el.play().catch(function () {}); });
+                startWaveform(); startTimer(el);
             }
 
             function typeCaption(text) {
-                clearTimeout(typeTimer);
-                if (!captionEl) return;
+                clearTimeout(typeTimer); if (!captionEl) return;
                 captionEl.innerHTML = '<span class="jhud-cursor"></span>';
                 var i = 0;
-
                 function next() {
-                    if (i < text.length) {
-                        captionEl.innerHTML = esc(text.slice(0, ++i)) + '<span class="jhud-cursor"></span>';
-                        typeTimer = setTimeout(next, 34 + Math.random() * 20);
-                    }
+                    if (i < text.length) { captionEl.innerHTML = esc(text.slice(0, ++i)) + '<span class="jhud-cursor"></span>'; typeTimer = setTimeout(next, 34 + Math.random() * 20); }
                 }
                 typeTimer = setTimeout(next, 160);
             }
 
-            function esc(s) {
-                return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-            }
+            function esc(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
             function startWaveform() {
-                if (!cCtx) return;
-                stopWaveform();
-                simT = 0;
-                var W = canvasEl.width;
-                var H = canvasEl.height;
-                var BARS = 40;
-                var bW = W / BARS;
+                if (!cCtx) return; stopWaveform(); simT = 0;
+                var W = canvasEl.width, H = canvasEl.height, BARS = 40, bW = W / BARS;
                 var data = (analyser && webAudioOk) ? new Uint8Array(analyser.frequencyBinCount) : null;
-
                 function draw() {
-                    rafId = requestAnimationFrame(draw);
-                    simT += 0.06;
-
+                    rafId = requestAnimationFrame(draw); simT += 0.06;
                     if (data && analyser) analyser.getByteFrequencyData(data);
-
                     cCtx.clearRect(0, 0, W, H);
-
                     for (var b = 0; b < BARS; b++) {
-                        var v;
-                        if (data) {
-                            var idx = Math.floor(b * data.length / (BARS * 1.5));
-                            v = data[idx] / 255;
-                        } else {
-                            v = 0.15 + 0.55 * Math.abs(
-                                Math.sin(simT * 1.2 + b * 0.38) * Math.cos(simT * 0.7 + b * 0.22) +
-                                0.3 * Math.sin(simT * 2.1 + b * 0.6)
-                            );
-                        }
-
-                        var h = Math.max(2, v * H * 0.92);
-                        var x = b * bW + bW * 0.1;
-                        var bw = bW * 0.75;
-
-                        var gr = cCtx.createLinearGradient(0, H - h, 0, H);
+                        var v; if (data) { v = data[Math.floor(b * data.length / (BARS * 1.5))] / 255; }
+                        else { v = 0.15 + 0.55 * Math.abs(Math.sin(simT*1.2+b*0.38)*Math.cos(simT*0.7+b*0.22)+0.3*Math.sin(simT*2.1+b*0.6)); }
+                        var h = Math.max(2, v * H * 0.92), x = b * bW + bW * 0.1, bw = bW * 0.75;
+                        var gr = cCtx.createLinearGradient(0, H-h, 0, H);
                         gr.addColorStop(0, v > 0.6 ? 'rgba(29,233,182,.95)' : 'rgba(0,212,255,.9)');
-                        gr.addColorStop(0.5, 'rgba(0,170,220,.45)');
-                        gr.addColorStop(1, 'rgba(0,90,160,.1)');
-                        cCtx.fillStyle = gr;
-                        cCtx.fillRect(x, H - h, bw, h);
-
-                        if (v > 0.28) {
-                            cCtx.fillStyle = v > 0.6 ? 'rgba(29,233,182,.95)' : 'rgba(0,212,255,.75)';
-                            cCtx.fillRect(x, H - h - 1.5, bw, 1.5);
-                        }
+                        gr.addColorStop(0.5, 'rgba(0,170,220,.45)'); gr.addColorStop(1, 'rgba(0,90,160,.1)');
+                        cCtx.fillStyle = gr; cCtx.fillRect(x, H-h, bw, h);
+                        if (v > 0.28) { cCtx.fillStyle = v > 0.6 ? 'rgba(29,233,182,.95)' : 'rgba(0,212,255,.75)'; cCtx.fillRect(x, H-h-1.5, bw, 1.5); }
                     }
                 }
                 draw();
             }
 
-            function stopWaveform() {
-                if (rafId) {
-                    cancelAnimationFrame(rafId);
-                    rafId = null;
-                }
-                if (cCtx && canvasEl) cCtx.clearRect(0, 0, canvasEl.width, canvasEl.height);
-            }
+            function stopWaveform() { if (rafId) { cancelAnimationFrame(rafId); rafId = null; } if (cCtx && canvasEl) cCtx.clearRect(0, 0, canvasEl.width, canvasEl.height); }
 
             function startTimer(el) {
                 if (timerRaf) cancelAnimationFrame(timerRaf);
-
                 function tick() {
                     if (!playing) return;
                     var t = el.currentTime || 0;
-                    var m = String(Math.floor(t / 60)).padStart(2, '0');
-                    var s = String(Math.floor(t % 60)).padStart(2, '0');
-                    if (timeEl) timeEl.textContent = m + ':' + s;
+                    if (timeEl) timeEl.textContent = String(Math.floor(t/60)).padStart(2,'0') + ':' + String(Math.floor(t%60)).padStart(2,'0');
                     timerRaf = requestAnimationFrame(tick);
                 }
                 tick();
             }
 
             function flashScreen() {
-                var d = document.createElement('div');
-                d.className = 'j-flash';
-                document.body.appendChild(d);
-                setTimeout(function () {
-                    if (d.parentNode) d.parentNode.removeChild(d);
-                }, 950);
+                var d = document.createElement('div'); d.className = 'j-flash'; document.body.appendChild(d);
+                setTimeout(function () { if (d.parentNode) d.parentNode.removeChild(d); }, 950);
             }
 
             function setupObservers() {
@@ -3074,18 +1452,10 @@
                     { sel: '#trigger-acesso', i: 3, margin: '0px' },
                     { sel: '#cta', i: 4, margin: '0px' }
                 ];
-
                 pairs.forEach(function (p) {
-                    var el = document.querySelector(p.sel);
-                    if (!el) return;
-
+                    var el = document.querySelector(p.sel); if (!el) return;
                     var obs = new IntersectionObserver(function (entries) {
-                        entries.forEach(function (e) {
-                            if (e.isIntersecting && !triggered[p.i]) {
-                                playTrack(p.i);
-                                obs.unobserve(el);
-                            }
-                        });
+                        entries.forEach(function (e) { if (e.isIntersecting && !triggered[p.i]) { playTrack(p.i); obs.unobserve(el); } });
                     }, { threshold: 0.15, rootMargin: p.margin });
                     obs.observe(el);
                 });
@@ -3093,282 +1463,180 @@
 
             function btnActivated() {
                 if (!unlockBtn) return;
-                unlockBtn.textContent = '✓ SISTEMA ATIVADO';
-                unlockBtn.style.color = '#1de9b6';
-                unlockBtn.style.borderColor = 'rgba(29,233,182,.5)';
-                setTimeout(function () {
-                    unlockBtn.classList.add('hidden');
-                    setTimeout(function () {
-                        unlockBtn.style.display = 'none';
-                    }, 600);
-                }, 900);
+                unlockBtn.textContent = '\u2713 SISTEMA ATIVADO';
+                unlockBtn.style.color = '#1de9b6'; unlockBtn.style.borderColor = 'rgba(29,233,182,.5)';
+                setTimeout(function () { unlockBtn.classList.add('hidden'); setTimeout(function () { unlockBtn.style.display = 'none'; }, 600); }, 900);
             }
 
             function onUnlock() {
                 if (unlocked) return;
-                tryBootWebAudio();
-                preAuthorizeAudio();
-                if (audioCtx && audioCtx.state === 'suspended') {
-                    audioCtx.resume().catch(function () {});
-                }
-                unlocked = true;
-                btnActivated();
-                setupObservers();
+                tryBootWebAudio(); preAuthorizeAudio();
+                if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume().catch(function () {});
+                unlocked = true; btnActivated(); setupObservers();
             }
 
             if (unlockBtn) {
                 unlockBtn.addEventListener('click', onUnlock, { passive: false });
-                unlockBtn.addEventListener('touchstart', function (e) {
-                    e.preventDefault();
-                    onUnlock();
-                }, { passive: false });
+                unlockBtn.addEventListener('touchstart', function (e) { e.preventDefault(); onUnlock(); }, { passive: false });
             }
         })();
     </script>
 
-    <!-- ═══════════════════════════════════════════════════════════
-         NEXUS PREMIUM SCRIPTS
-         ═══════════════════════════════════════════════════════════ -->
+    <!-- PREMIUM SCRIPTS -->
     <script>
-    // ── Hero Terminal: live typing simulation ────────────────────
+    // Hero Terminal: live typing
     (function(){
         var el = document.getElementById('hero-terminal');
         if (!el) return;
         var lines = [
             { type:'prompt',  text:'$ python server.py' },
-            { type:'output',  text:'[NEXUS] Voice Service v2 — Starting...' },
+            { type:'output',  text:'[IA] Voice Service v2 \u2014 Starting...' },
             { type:'output',  text:'[STT] Whisper base model loaded' },
             { type:'output',  text:'[TTS] Edge TTS engine ready' },
-            { type:'success', text:'[AI] GPT-4o-mini connected ✓' },
-            { type:'success', text:'[TOOLS] 27 tools registered ✓' },
+            { type:'success', text:'[AI] GPT-4o-mini connected \u2713' },
+            { type:'success', text:'[TOOLS] 27 tools registered \u2713' },
             { type:'output',  text:'[MEM] 42 facts loaded, 128 messages in history' },
-            { type:'success', text:'[OVERLAY] Holographic engine ready ✓' },
+            { type:'success', text:'[OVERLAY] Holographic engine ready \u2713' },
             { type:'prompt',  text:'$ status: ALL SYSTEMS NOMINAL' },
         ];
         var li = 0, ci = 0;
-        var pad = '<br style="height:4px;display:block">';
 
         function nextLine(){
             if (li >= lines.length) {
                 el.innerHTML += '<span class="term-cursor"></span>';
-                // Restart after pause
-                setTimeout(function(){
-                    el.innerHTML = '';
-                    li = 0; ci = 0;
-                    nextLine();
-                }, 6000);
+                setTimeout(function(){ el.innerHTML = ''; li = 0; ci = 0; nextLine(); }, 6000);
                 return;
             }
             var ln = lines[li];
             var cls = ln.type === 'prompt' ? 'term-prompt' : ln.type === 'success' ? 'term-success' : 'term-output';
             var span = document.createElement('div');
-            span.className = cls;
-            span.style.opacity = '0';
-            span.style.transform = 'translateX(-6px)';
-            span.style.transition = 'all .3s ease';
+            span.className = cls; span.style.opacity = '0'; span.style.transform = 'translateX(-6px)'; span.style.transition = 'all .3s ease';
             el.appendChild(span);
 
             function typeChar(){
                 if (ci < ln.text.length) {
                     span.textContent = ln.text.slice(0, ++ci);
-                    span.style.opacity = '1';
-                    span.style.transform = 'translateX(0)';
+                    span.style.opacity = '1'; span.style.transform = 'translateX(0)';
                     setTimeout(typeChar, 18 + Math.random()*12);
-                } else {
-                    li++; ci = 0;
-                    setTimeout(nextLine, ln.type === 'prompt' ? 400 : 120);
-                }
+                } else { li++; ci = 0; setTimeout(nextLine, ln.type === 'prompt' ? 400 : 120); }
             }
             setTimeout(typeChar, 80);
         }
         setTimeout(nextLine, 1800);
     })();
 
-    // ── Demo canvas: simulated HUD preview ──────────────────────
+    // Demo canvas: simulated HUD
     (function(){
         var cvs = document.getElementById('demo-canvas');
         if (!cvs) return;
         var ctx = cvs.getContext('2d');
-        var W = cvs.width, H = cvs.height;
-        var t = 0;
+        var W = cvs.width, H = cvs.height, t = 0;
 
         function draw(){
-            ctx.fillStyle = '#020810';
-            ctx.fillRect(0, 0, W, H);
+            ctx.fillStyle = '#020810'; ctx.fillRect(0, 0, W, H);
 
-            // Hex grid
-            ctx.strokeStyle = '#0a1020';
-            ctx.lineWidth = .6;
+            ctx.strokeStyle = '#0a1020'; ctx.lineWidth = .6;
             var hs = 24;
             for (var row = 0; row < H/(hs*1.5)+2; row++){
                 for (var col = 0; col < W/(hs*1.73)+2; col++){
-                    var cx = col*hs*1.73 + (hs*.87*(row%2));
-                    var cy = row*hs*1.5;
+                    var cx = col*hs*1.73 + (hs*.87*(row%2)), cy = row*hs*1.5;
                     ctx.beginPath();
-                    for (var i = 0; i < 6; i++){
-                        var a = Math.PI/180*(60*i+30);
-                        var px = cx+hs*.45*Math.cos(a), py = cy+hs*.45*Math.sin(a);
-                        i===0 ? ctx.moveTo(px,py) : ctx.lineTo(px,py);
-                    }
-                    ctx.closePath();
-                    ctx.stroke();
+                    for (var i = 0; i < 6; i++){ var a = Math.PI/180*(60*i+30); var px = cx+hs*.45*Math.cos(a), py = cy+hs*.45*Math.sin(a); i===0 ? ctx.moveTo(px,py) : ctx.lineTo(px,py); }
+                    ctx.closePath(); ctx.stroke();
                 }
             }
 
-            // Scan line
             var sy = (t*1.5)%(H+20);
-            ctx.strokeStyle = 'rgba(0,212,255,.12)';
-            ctx.lineWidth = 1;
+            ctx.strokeStyle = 'rgba(0,212,255,.12)'; ctx.lineWidth = 1;
             ctx.beginPath(); ctx.moveTo(0,sy); ctx.lineTo(W,sy); ctx.stroke();
 
-            // Service boxes (left side)
-            var services = ['VOICE SERVICE','TELEGRAM','WHATSAPP','N.E.X.U.S. GUI','HOME ASSISTANT'];
+            var services = ['VOICE SERVICE','TELEGRAM','WHATSAPP','IA GUI','HOME ASSISTANT'];
             var sColors = ['#00ff9d','#00ff9d','#ffd166','#00ff9d','#00d4ff'];
             for (var s = 0; s < services.length; s++){
                 var sy2 = 30 + s*36;
-                // Bar
-                ctx.fillStyle = '#0c1018';
-                ctx.fillRect(20, sy2, 200, 28);
-                ctx.strokeStyle = '#152030';
-                ctx.lineWidth = .5;
-                ctx.strokeRect(20, sy2, 200, 28);
-                // Accent
-                ctx.fillStyle = sColors[s];
-                ctx.fillRect(20, sy2, 3, 28);
-                // Dot
+                ctx.fillStyle = '#0c1018'; ctx.fillRect(20, sy2, 200, 28);
+                ctx.strokeStyle = '#152030'; ctx.lineWidth = .5; ctx.strokeRect(20, sy2, 200, 28);
+                ctx.fillStyle = sColors[s]; ctx.fillRect(20, sy2, 3, 28);
                 var pulse = (Math.sin(t*.08+s)+1)/2;
-                ctx.beginPath();
-                ctx.arc(36, sy2+14, 4, 0, Math.PI*2);
-                ctx.fillStyle = sColors[s];
-                ctx.globalAlpha = .5+.5*pulse;
-                ctx.fill();
-                ctx.globalAlpha = 1;
-                // Text
-                ctx.fillStyle = '#8ea0b8';
-                ctx.font = '8px "Share Tech Mono"';
-                ctx.fillText(services[s], 46, sy2+17);
-                // Status
-                ctx.fillStyle = sColors[s];
-                ctx.font = '7px "Share Tech Mono"';
-                ctx.fillText('ONLINE', 170, sy2+17);
+                ctx.beginPath(); ctx.arc(36, sy2+14, 4, 0, Math.PI*2);
+                ctx.fillStyle = sColors[s]; ctx.globalAlpha = .5+.5*pulse; ctx.fill(); ctx.globalAlpha = 1;
+                ctx.fillStyle = '#8ea0b8'; ctx.font = '8px "Share Tech Mono"'; ctx.fillText(services[s], 46, sy2+17);
+                ctx.fillStyle = sColors[s]; ctx.font = '7px "Share Tech Mono"'; ctx.fillText('ONLINE', 170, sy2+17);
             }
 
-            // Right side: brain nodes
             var bcx = W-140, bcy = H/2;
             for (var n = 0; n < 16; n++){
-                var angle = (n/16)*Math.PI*2+t*.02;
-                var r = 40+20*Math.sin(n*2.3+t*.03);
+                var angle = (n/16)*Math.PI*2+t*.02, r = 40+20*Math.sin(n*2.3+t*.03);
                 var nx = bcx+Math.cos(angle)*r, ny = bcy+Math.sin(angle)*r;
                 var active = (Math.sin(t*.05+n*1.2)+1)/2;
-                // Connection to center
-                ctx.beginPath();
-                ctx.moveTo(bcx, bcy);
-                ctx.lineTo(nx, ny);
-                ctx.strokeStyle = 'rgba(0,212,255,'+(active*.15)+')';
-                ctx.lineWidth = .5;
-                ctx.stroke();
-                // Node
-                ctx.beginPath();
-                ctx.arc(nx, ny, 2+active*2, 0, Math.PI*2);
-                ctx.fillStyle = 'rgba(0,212,255,'+(active*.6+.2)+')';
-                ctx.fill();
+                ctx.beginPath(); ctx.moveTo(bcx, bcy); ctx.lineTo(nx, ny);
+                ctx.strokeStyle = 'rgba(0,212,255,'+(active*.15)+')'; ctx.lineWidth = .5; ctx.stroke();
+                ctx.beginPath(); ctx.arc(nx, ny, 2+active*2, 0, Math.PI*2);
+                ctx.fillStyle = 'rgba(0,212,255,'+(active*.6+.2)+')'; ctx.fill();
             }
-            // Brain core
-            ctx.beginPath();
-            ctx.arc(bcx, bcy, 6, 0, Math.PI*2);
+            ctx.beginPath(); ctx.arc(bcx, bcy, 6, 0, Math.PI*2);
             var cg = ctx.createRadialGradient(bcx,bcy,0,bcx,bcy,6);
-            cg.addColorStop(0,'rgba(255,255,255,.8)');
-            cg.addColorStop(1,'rgba(0,212,255,0)');
-            ctx.fillStyle = cg;
-            ctx.fill();
+            cg.addColorStop(0,'rgba(255,255,255,.8)'); cg.addColorStop(1,'rgba(0,212,255,0)');
+            ctx.fillStyle = cg; ctx.fill();
 
-            // Data matrix (center)
-            ctx.font = '7px "Share Tech Mono"';
-            ctx.fillStyle = 'rgba(0,212,255,.12)';
+            ctx.font = '7px "Share Tech Mono"'; ctx.fillStyle = 'rgba(0,212,255,.12)';
             for (var dr = 0; dr < 8; dr++){
                 var dtxt = '';
-                for (var dc = 0; dc < 16; dc++){
-                    dtxt += Math.floor(Math.random()*16).toString(16).toUpperCase();
-                    if (dc%2===1) dtxt += ' ';
-                }
+                for (var dc = 0; dc < 16; dc++){ dtxt += Math.floor(Math.random()*16).toString(16).toUpperCase(); if (dc%2===1) dtxt += ' '; }
                 ctx.fillText(dtxt, 240, 30+dr*16);
             }
 
-            // Arc reactor mini (top right)
             var acx = W-40, acy = 30;
-            for (var ar = 0; ar < 8; ar++){
-                var aa = (ar/8)*Math.PI*2+t*.06;
-                ctx.beginPath();
-                ctx.arc(acx, acy, 16, aa, aa+.45);
-                ctx.strokeStyle = 'rgba(0,212,255,.25)';
-                ctx.lineWidth = 1.5;
-                ctx.stroke();
-            }
-            ctx.beginPath();
-            ctx.arc(acx, acy, 4+Math.sin(t*.1)*1.5, 0, Math.PI*2);
-            ctx.fillStyle = '#00d4ff';
-            ctx.fill();
+            for (var ar = 0; ar < 8; ar++){ var aa = (ar/8)*Math.PI*2+t*.06; ctx.beginPath(); ctx.arc(acx, acy, 16, aa, aa+.45); ctx.strokeStyle = 'rgba(0,212,255,.25)'; ctx.lineWidth = 1.5; ctx.stroke(); }
+            ctx.beginPath(); ctx.arc(acx, acy, 4+Math.sin(t*.1)*1.5, 0, Math.PI*2); ctx.fillStyle = '#00d4ff'; ctx.fill();
 
-            // Corner brackets
-            ctx.strokeStyle = 'rgba(0,212,255,.2)';
-            ctx.lineWidth = 1;
+            ctx.strokeStyle = 'rgba(0,212,255,.2)'; ctx.lineWidth = 1;
             [[4,4,1,1],[W-4,4,-1,1],[4,H-4,1,-1],[W-4,H-4,-1,-1]].forEach(function(c){
-                ctx.beginPath();
-                ctx.moveTo(c[0]+c[2]*16,c[1]); ctx.lineTo(c[0],c[1]); ctx.lineTo(c[0],c[1]+c[3]*10);
-                ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(c[0]+c[2]*16,c[1]); ctx.lineTo(c[0],c[1]); ctx.lineTo(c[0],c[1]+c[3]*10); ctx.stroke();
             });
-
-            t++;
-            requestAnimationFrame(draw);
+            t++; requestAnimationFrame(draw);
         }
-
-        var obs = new IntersectionObserver(function(entries){
-            if(entries[0].isIntersecting){ draw(); obs.disconnect(); }
-        },{threshold:.1});
+        var obs = new IntersectionObserver(function(entries){ if(entries[0].isIntersecting){ draw(); obs.disconnect(); } },{threshold:.1});
         obs.observe(cvs);
     })();
 
-    // ── Power bars animation ────────────────────────────────────
+    // Power bars animation
     (function(){
         var grid = document.getElementById('power-grid');
         if (!grid) return;
         new IntersectionObserver(function(e){
-            if(e[0].isIntersecting){
-                grid.querySelectorAll('.power-bar').forEach(function(b,i){
-                    setTimeout(function(){ b.classList.add('active'); }, i*150);
-                });
-            }
+            if(e[0].isIntersecting){ grid.querySelectorAll('.power-bar').forEach(function(b,i){ setTimeout(function(){ b.classList.add('active'); }, i*150); }); }
         },{threshold:.3}).observe(grid);
     })();
 
-    // ── Inject holographic shimmer into all holo-cards ──────────
+    // Inject holographic shimmer
     (function(){
         document.querySelectorAll('.holo-card').forEach(function(card){
-            var shimmer = document.createElement('div');
-            shimmer.className = 'holo-shimmer';
-            card.appendChild(shimmer);
+            var shimmer = document.createElement('div'); shimmer.className = 'holo-shimmer'; card.appendChild(shimmer);
         });
     })();
 
-    // ── Inject code rain effect on diff-banner ──────────────────
+    // Code rain on diff-banner
     (function(){
         var banner = document.querySelector('.diff-banner');
         if (!banner) return;
-        var rain = document.createElement('div');
-        rain.className = 'code-rain';
-        var chars = 'NEXUS.AI=TRUE;MEM.LOAD();SOUL.INIT();TOOLS[27];TTS.ON;STT.OK;HA.CONNECT;'.split('');
+        var rain = document.createElement('div'); rain.className = 'code-rain';
+        var chars = 'IA.AI=TRUE;MEM.LOAD();SOUL.INIT();TOOLS[27];TTS.ON;STT.OK;HA.CONNECT;'.split('');
         for (var i = 0; i < 12; i++){
             var s = document.createElement('span');
             s.textContent = chars.slice(i*5,(i+1)*5).join('');
-            s.style.left = Math.random()*80+'px';
-            s.style.animationDuration = (4+Math.random()*6)+'s';
-            s.style.animationDelay = Math.random()*4+'s';
+            s.style.left = Math.random()*80+'px'; s.style.animationDuration = (4+Math.random()*6)+'s'; s.style.animationDelay = Math.random()*4+'s';
             rain.appendChild(s);
         }
-        banner.style.position = 'relative';
-        banner.appendChild(rain);
+        banner.style.position = 'relative'; banner.appendChild(rain);
     })();
+
+    // Smooth scroll for anchor links
+    document.querySelectorAll('a[href^="#"]').forEach(function(a){
+        a.addEventListener('click', function(e){
+            var target = document.querySelector(this.getAttribute('href'));
+            if (target) { e.preventDefault(); target.scrollIntoView({behavior:'smooth',block:'center'}); }
+        });
+    });
     </script>
-
-
 </body></html>
